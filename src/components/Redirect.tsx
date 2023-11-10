@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import React,{useEffect} from "react";
 import {useNavigate } from "react-router-dom";
 // 自定义 重定向函数 {to} 形参解构 取出 props内的 属性 to
 function Redirect({to}:any){

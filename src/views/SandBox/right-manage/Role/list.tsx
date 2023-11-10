@@ -8,8 +8,12 @@ import { Modal, Button, Tree } from 'antd'
 import type { DataNode, TreeProps } from 'antd/es/tree';
 import MyTable from '../../../../components/table'
 import MyTree from '../../../../components/SandBox/RightsManage/Role/tree'
-import axios from 'axios';
+
 import Item from 'antd/es/list/Item';
+// 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
+import { $axios} from '../../../../util/request';
+import { useSelector,useDispatch } from 'react-redux';
+import { getRightsList } from '../../../../redux/actionCreators/rightsSlice';
 const { confirm } = Modal;
 // ['/user-manage',
 // '/user-manage/add',
@@ -54,6 +58,12 @@ function dataFilter(data:any){
 
 // 权限管理 -  角色 列表组件
 export default function RoleList() {
+   //根据store.js中设置的reducer名字，从 userSlice 空间获取state
+   const {userInfo}=useSelector((state:any)=>{return state.userSlice});
+   // 状态管理 - 设置
+   const dispatch = useDispatch<any>();
+       //根据store.js中设置的reducer名字，从 rightsSlice 空间获取state
+     const { rightsList    }=useSelector((state:any)=>{return state.rightsSlice});
   //  角色列表
   const [dataSource, setdataSource] = useState<any>([]);
   // 加载 loading
@@ -71,7 +81,7 @@ export default function RoleList() {
 
   const [ItemRights,setItemRights]= useState()
   const showModal = (data: any) => {
-    console.log(data,checked,halfChecked,)
+    // console.log(data,rightList)
     // 打开 modal 窗口
     setIsModalOpen(true);
     // 获取角色 id
@@ -82,14 +92,14 @@ export default function RoleList() {
     let parentKey:any =  [];
     // 当前dataSource内的rights权限 数组
     data.rights.map((item:any)=>{
-      for(let i in rightList){
-        if(rightList[i].key.includes(item)){
-          let nodeChildren = rightList[i].children;
+      for(let i in rightsList){
+        if(rightsList[i].key.includes(item)){
+          let nodeChildren = rightsList[i].children;
           if(nodeChildren.length>0){
               for(let k in nodeChildren){
                 // 父节点下 存在 子节点未选中的  父key添加到 半选 数组中
                 if(!data.rights.includes(nodeChildren[k].key)){
-                  parentKey.push(rightList[i].key)
+                  parentKey.push(rightsList[i].key)
                   break;
                 }
               }
@@ -97,8 +107,9 @@ export default function RoleList() {
         }
       }
     })
+
     // 过滤 去除 存在 子节点未全部选中 的父key
-    let  newchecked =data.rights.filter((item:any)=> !parentKey.includes(item))
+    let  newchecked = data.rights.filter((item:any)=> !parentKey.includes(item))
     console.log(parentKey,newchecked)
     // 父key添加到 半选 数组
     sethalfChecked(parentKey)
@@ -115,19 +126,47 @@ export default function RoleList() {
     let current = checked.concat(halfChecked);
     // 数组去重 - // 如果新数组的当前元素的索引值 == 该元素在原始数组中的第一个索引，则返回当前元素
     // /**current.indexOf(item),该方法将从头到尾地检索数组，看它是否含有对应的元素。如果找到一个item，则返回 item的"第一次出现的位置"。**/
-    let list = current.filter((item:any,index:any)=>current.indexOf(item)===index)
+    let list = current.filter((item:any,index:any)=>current.indexOf(item)===index);
+    let delerights:any=null;
     // 确认 利用map 映射 - 修改权限数据 状态 item.id == 匹配当前修改的 currentId 展开...item对象 修改内的rights属性 重新赋值为 list，封装 原item 返回
-    let data= dataSource.map((item:any)=> item.id == currentId ?{...item,rights:list}:item );
-    console.log(dataSource,list,data);
+    let data= dataSource.map((item:any)=> {
+      if(item.id == currentId){
+        // 获取修改的 权限项
+        delerights=item.rights.filter((item:any,index:any)=> !list.includes(item))
+        return {...item,rights:list}
+      }else{
+        return item
+      }
+    });
+    console.log(dataSource,list,data,delerights);
     // 更新状态
     setdataSource(data);
-    axios({
-      url: '/api/api/roles',
+    let setData:any= {
+      rights:(list.join(',')),
+    };
+     // 获取修改的 权限项 存在值
+    if((delerights&&delerights.length>0)){
+      setData.rightsdele=delerights.join(',')
+    }
+    
+    $axios({
+      url: '/api/roles',
       method: 'put',
-      params:{id:currentId,rights:list.join(',')}
+      data:{
+        id:currentId,
+        set:{
+          ...setData,
+        },
+      }
     }).then(res => {
-      console.log(res)
-    })
+      if(res.data.Code === 0){
+         // console.log(res,currentId,userInfo)
+        // 修改的角色权限currentId 等级等于自己时 roleid （自己的权限发生变化） - 重新 获取权限 及其权限列表发生变化 -  更新左侧菜单栏
+        currentId == userInfo.roleid && dispatch(getRightsList(userInfo))
+      }
+    }).catch((err)=>{
+      console.log(err)
+  })
 
     // 关闭 modal
     setIsModalOpen(false);
@@ -185,8 +224,8 @@ export default function RoleList() {
   //删除-调用接口
   const deleteMethod = (data: any) => {
     console.log(data)
-    axios({
-      url: '/api/api/roles',
+    $axios({
+      url: '/api/roles',
       method: 'delete',
       params: {
         id: data.id
@@ -200,32 +239,41 @@ export default function RoleList() {
         setdataSource(newdata.filter((Item: any) => Item.id != data.id));
       }
 
-    })
+    }).catch((err)=>{
+      console.log(err)
+  })
   }
   // 获取 角色列表
   useEffect(() => {
-    axios({
-      url: '/api/api/roles',
+    $axios({
+      url: '/api/roles',
       method: 'get',
     }).then(res => {
       // 递归过滤 pagepermisson ===1 的数据 说明 有权限展示
       let data = dataFilter(res.data.Data)
-      // console.log(res.data.Data,data)
+      console.log(res.data.Data,data)
       setdataSource(data)
-      console.log(data)
-    })
+      // console.log(data)
+    }).catch((err)=>{
+      console.log(err)
+  })
+    
   }, [])
   // 获取 权限列表
   useEffect(() => {
-    axios({
-      url: '/api/api/rights',
-      method: 'get',
-    }).then(res => {
-      // 递归过滤 pagepermisson ===1 的数据 说明 有权限展示
-      // let data = rightsFilter(res.data.Data)
-      console.log(res.data.Data,)
-      setRightList(res.data.Data)
-    })
+    // $axios({
+    //   url: '/api/rights',
+    //   method: 'get',
+    //   params: {
+    //     id: userInfo.id,
+    //   },
+    // }).then(res => {
+    //   // 递归过滤 pagepermisson ===1 的数据 说明 有权限展示
+    //   // let data = rightsFilter(res.data.Data)
+    //   console.log(res.data.Data,)
+    //   setRightList(res.data.Data)
+    // })
+    console.log(rightsList)
   }, [])
 
   // 点击 tree 树时
@@ -261,12 +309,12 @@ export default function RoleList() {
       if(info.checked){
         let newchecked= JSON.parse(JSON.stringify(checked));
         newchecked.push(info.node.key);
-        for(let i in rightList){
-          if(rightList[i]?.id == info.node.rightid){
-            parentKey.push(rightList[i].key);
-            for(let k in  rightList[i].children){
+        for(let i in rightsList){
+          if(rightsList[i]?.id == info.node.rightid){
+            parentKey.push(rightsList[i].key);
+            for(let k in  rightsList[i].children){
                //  该父节点 下 所有子节点 都被选中了
-               if(newchecked.includes(rightList[i].children[k].key)){
+               if(newchecked.includes(rightsList[i].children[k].key)){
                 is=true;
               }else{
                 // 存在子节点 未被选中了
@@ -292,12 +340,12 @@ export default function RoleList() {
        let checkedFilter:any =newchecked.filter((Item:any)=>Item!=info.node.key );
        let is=false;
       //  获取父下的 children
-       for(let i in rightList){
-        if(rightList[i]?.id == info.node.rightid){
+       for(let i in rightsList){
+        if(rightsList[i]?.id == info.node.rightid){
           //去除 父节点的key 变成 半选状态
-          checkedFilter = checkedFilter.filter((ktem:any)=>ktem!=rightList[i].key)
-          parentKey.push(rightList[i].key);
-          rightList[i].children.map((Item:any)=>{
+          checkedFilter = checkedFilter.filter((ktem:any)=>ktem!=rightsList[i].key)
+          parentKey.push(rightsList[i].key);
+          rightsList[i].children.map((Item:any)=>{
             //  该父节点 的子节点 还有 选中的子 不剔除 半选状态
             if(checkedFilter.includes(Item.key)){
               is=true
@@ -335,7 +383,7 @@ export default function RoleList() {
           checkStrictly = {true} // 父子不联动 ，因为 tree的 关联 父选中 子默认全选中 但是其中一些子 又是一些角色 不该有的权限
           // onSelect={onSelect}
           onCheck={onCheck}
-          treeData={rightList}
+          treeData={rightsList}
         />
 
         {/* <MyTree ItemRights={ItemRights} rightList={rightList}></MyTree> */}

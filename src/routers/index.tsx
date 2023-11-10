@@ -32,11 +32,11 @@ const routes: Array<RouteType> = [
             },
             {
                 path: '/home', // 路由一级 ：首页
-                element: lazyLoad('SandBox/Home'),
+                element: lazyLoad('SandBox/home'),
             },
             {
                 path: '/user-manage', //路由一级 ： 用户管理
-                element: lazyLoad('SandBox/Users'),
+                element: lazyLoad('SandBox/user-manage'),
                 children: [
                     {
                         // path: '',
@@ -45,13 +45,13 @@ const routes: Array<RouteType> = [
                     },
                     {
                         path: 'list',
-                        element: lazyLoad('SandBox/Users/list'),
+                        element: lazyLoad('SandBox/user-manage/list'),
                     },
                 ]
             },
             {
                 path: '/right-manage', //路由一级 ： 权限管理
-                element: lazyLoad('SandBox/RightsManage'),
+                element: lazyLoad('SandBox/right-manage'),
                 children: [
                     {
                         // path: '',
@@ -60,11 +60,11 @@ const routes: Array<RouteType> = [
                     },
                     {
                         path: 'role/list',
-                        element: lazyLoad('SandBox/RightsManage/Role/list'),//权限管理 角色列表
+                        element: lazyLoad('SandBox/right-manage/Role/list'),//权限管理 角色列表
                     },
                     {
                         path: 'right/list',
-                        element: lazyLoad('SandBox/RightsManage/Right/list'),//权限管理 权限列表
+                        element: lazyLoad('SandBox/right-manage/Right/list'),//权限管理 权限列表
                     },
                 ]
             },

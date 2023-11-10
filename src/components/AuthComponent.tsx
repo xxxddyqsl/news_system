@@ -6,7 +6,7 @@ import React from 'react'
 // 模拟 获取token 是否登录 或者 授权
 const isAuth = function isAuth() {
     let token = localStorage.getItem('token');
-    console.log(token)
+    // console.log(token)
     let is = false;
     if (token) {
         is = true;

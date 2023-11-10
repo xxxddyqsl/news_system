@@ -47,7 +47,8 @@ module.exports = function (app) {
     //     pathRewrite: { '^/api': '' } //去除请求前缀，保证交给后台服务器的是正常请求地址(必须配置)
     //   }),
     createProxyMiddleware('/api', {
-      target: 'http://192.168.10.5:4399/',
+      target: 'http://172.18.70.26:4399/',
+      // target: 'http://192.168.10.5:4399/',//
       changeOrigin: true,
       pathRewrite: { '^/api': '' }
     }),

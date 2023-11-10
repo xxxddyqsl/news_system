@@ -5,17 +5,25 @@ import {
   ExclamationOutlined,
 } from '@ant-design/icons';
 import MyTable from '../../../components/table'
-import axios from 'axios';
+
 import { Modal, message, Form, Input, Button, Popover, Switch, Spin } from 'antd';
 import MyModal from '../../../components/modal';
 import MyForm from '../../../components/form';
 import UserForm from '../../../components/users-manage/userForm';
+// 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
+import { $axios} from '../../../util/request';
+import { useSelector } from 'react-redux';
+
+
+
 let { confirm } = Modal
 export default function UserList() {
+     //根据store.js中设置的reducer名字，从 userSlice 空间获取state
+  const {userInfo}=useSelector((state:any)=>{return state.userSlice});
   // 用户列表
   const [dataSource, setdataSource] = useState<any>();
   // 角色列表
-  const [rolesList, setRolesList] = useState();
+  const [rolesList, setRolesList] = useState<any>();
   // 区域列表
   const [regionsList, setRegionsList] = useState<any>([]);
   // 是否 禁用区域选择
@@ -34,16 +42,22 @@ export default function UserList() {
   // loading 动画是否显示
   const [loading, setLoading] = useState(false)
   useEffect(() => {
-    axios({
-      url: `/api/api/users`,
+    $axios({
+      url: `/api/users`,
       method: 'get',
+      params:{
+        roleid:userInfo.roleid,
+        region:userInfo.region,
+      }
     }).then(res => {
       console.log(res)
       if (res.data.Code != 0) return error();
 
       let data = res.data.Data;
       setdataSource(data);
-    });
+    }).catch((err)=>{
+      console.log(err)
+  });
     // 组件销毁时 触发 （ useEffect 依赖必须是空数组 没有依赖）
     return () => {
 
@@ -51,8 +65,8 @@ export default function UserList() {
   }, [])
   useEffect(() => {
     // 获取 角色列表
-    axios({
-      url: `/api/api/roles`,
+    $axios({
+      url: `/api/roles`,
       method: 'get',
     }).then(res => {
       // console.log(res)
@@ -60,7 +74,9 @@ export default function UserList() {
 
       let data = res.data.Data;
       setRolesList(data);
-    })
+    }).catch((err)=>{
+      console.log(err)
+  })
     // 组件销毁时 触发 （ useEffect 依赖必须是空数组 没有依赖）
     return () => {
 
@@ -68,8 +84,8 @@ export default function UserList() {
   }, [])
   useEffect(() => {
     // 获取 区域列表
-    axios({
-      url: `/api/api/regions`,
+    $axios({
+      url: `/api/regions`,
       method: 'get',
     }).then(res => {
       console.log(res)
@@ -77,7 +93,9 @@ export default function UserList() {
 
       let data = res.data.Data;
       setRegionsList(data);
-    })
+    }).catch((err)=>{
+      console.log(err)
+  })
     // 组件销毁时 触发 （ useEffect 依赖必须是空数组 没有依赖）
     return () => {
 
@@ -134,7 +152,7 @@ export default function UserList() {
       dataIndex: 'rolestate',
       key: 'id',// key 可写可不写
       render: (roleState: any, record: any, index: any) => {
-        console.log(record)
+        // console.log(record)
         // roleState 1 为默认用户的状态 开关 1 (为真) 打开 0 (为假)关闭, default 1 为默认用户 禁止删除- 修改状态
         return <Switch onChange={() => {
           setLoading(true)
@@ -190,6 +208,14 @@ export default function UserList() {
   }
   // 操作 - 点击 编辑用户
   const handleEditUserInfo = (item: any) => {
+  // 不是超级管理员
+  if(userInfo.roleid!=1){
+    //  只能添加 选择当前自己的区域
+    setRegionsList(regionsList.map((item:any)=> item=(!item.value.includes(userInfo.region)?{...item,disabled:true}:item)))
+    //  只能添加  自己下一级角色的权限
+    setRolesList(rolesList.map((item:any)=> item=(item.roleType<=userInfo.roleid?{...item,disabled:true}:item)))
+  }
+
     // 显示 更新用户 modal窗口
     setUpdateOpen(true)
     console.log(item)
@@ -228,10 +254,20 @@ export default function UserList() {
   }
   // 添加用户
   const handleUserAdd = () => {
-    // console.log('userAdd')
+    console.log('userAdd',userInfo,rolesList)
     // 显示 modal 组件
     setOpen(true);
-
+    // 不是超级管理员
+    if(userInfo.roleid!=1){
+      // select 输入框默认值
+      // form.setFieldValue('region',userInfo.region)
+      //  只能添加 是自己下一级的权限
+      // form.setFieldValue('roleid',userInfo.roleid+1)
+      //  只能添加 选择当前自己的区域
+      setRegionsList(regionsList.map((item:any)=> item=(!item.value.includes(userInfo.region)?{...item,disabled:true}:item)))
+      //  只能添加 是自己下一级的权限
+       setRolesList(rolesList.map((item:any)=> item=(item.roleType<=userInfo.roleid?{...item,disabled:true}:item)))
+    }
   }
   //  select - 区域
   const handleChangeRegion = (value: string, newForm: any) => {
@@ -261,9 +297,10 @@ export default function UserList() {
     form.validateFields().then((value: any) => {
       console.log(value)
       setLoading(true)
+      
       //  post 到后端
-      axios({
-        url: `/api/api/users`,
+      $axios({
+        url: `/api/users`,
         method: 'post',
         // params:{...value}, //params 的形式传参数是url中 query
         data: { // data 的形式传参数 是在 body 体中
@@ -289,14 +326,15 @@ export default function UserList() {
       })
     }).catch((err: any) => {
       console.log(err)
+      // message.error(err.errorFields[0].errors.join(','))
     })
     console.log('确认', form)
   }
   //  删除用户
   const deleteMethod = (item: any) => {
     console.log(item)
-    axios({
-      url: `/api/api/users`,
+    $axios({
+      url: `/api/users`,
       method: 'delete',
       data: {
         id: item.id
@@ -308,15 +346,17 @@ export default function UserList() {
       let newlist = JSON.parse(JSON.stringify(dataSource))
       let newdata = newlist.filter((data: any) => data.id != item.id);
       setdataSource(newdata)
-    })
+    }).catch((err)=>{
+      console.log(err)
+  })
   }
   //  修改用户-信息 状态
   const handleRoleState = (newlist: any, data: any) => {
     // console.log(res)
     // setdataSource(newlist)
 
-    axios({
-      url: `/api/api/users`,
+    $axios({
+      url: `/api/users`,
       method: 'patch',
       data: data,
     }).then((res) => {
@@ -330,7 +370,9 @@ export default function UserList() {
       setdataSource(updateList)
       // 关闭 modal
       setUpdateOpen(false)
-    })
+    }).catch((err)=>{
+      console.log(err)
+  })
   }
   return (
     <>

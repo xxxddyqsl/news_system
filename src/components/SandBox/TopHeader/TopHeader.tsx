@@ -11,14 +11,15 @@ import type { MenuProps } from 'antd';
 import { Layout, Button, theme, Avatar, Dropdown, Space } from 'antd';
 const { Header } = Layout;
 
-export default function TopHeader() {
+export default function TopHeader(props:any) {
+  console.log(props)
   const items: MenuProps['items'] = [
     
     {
       key: '2',
       label: (
         <div>
-         超级管理员
+         {props.userInfo.roleName}
         </div>
       ),
       icon: <SmileOutlined />,
@@ -31,7 +32,7 @@ export default function TopHeader() {
       icon: <LogoutOutlined />,
       label: (
         <div onClick={()=>{
-          console.log('退出')
+          // console.log('退出')
           localStorage.removeItem('token');
           //  重定向跳转到 login
           navigate('/login');
@@ -67,7 +68,7 @@ export default function TopHeader() {
       <div style={{ float: 'right', marginRight: '20px' }}>
         <Dropdown menu={{ items }}>
           <Space>
-            <span style={{ marginRight: '8px' }}>欢迎{localStorage.getItem('token')}</span>
+            <span style={{ marginRight: '8px' }}>欢迎<span style={{color:'#1890ff'}}>{props.userInfo.username}</span>回来</span>
             <Avatar size="large" icon={<UserOutlined />} />
           </Space>
         </Dropdown>
