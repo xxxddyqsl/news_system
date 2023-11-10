@@ -102,7 +102,7 @@ export default function RightList() {
       icon: <ExclamationOutlined></ExclamationOutlined>,
       // content:'2',
       onOk() {
-        setLoading(true)
+        // setLoading(true)
         // 删除
         deleteMethod(item)
       },
@@ -126,7 +126,7 @@ export default function RightList() {
       // dataSource?.filter((item:any)=>item?.id!==data?.id)
       setdataSource(delrightsFilter(dataSource, data.id))
       // 隐藏loading
-      setLoading(false)
+      // setLoading(false)
       // console.log(res, loading)
     }).catch((err) => {
       console.log(err)
@@ -135,7 +135,7 @@ export default function RightList() {
   // 配置 页面 权限 pagepermisson
   const switchMethod = (data: any) => {
     // 显示loading
-    setLoading(true)
+    // setLoading(true)
     /*
       data.pagepermisson = data.pagepermisson===1?0:1;
        此处进行了 擦边球 直接修改了 data  而状态 dataSource 引用的域 和 data 是同样的 因此 修改 data 的值 状态 dataSource也会改变，
@@ -173,7 +173,7 @@ export default function RightList() {
     }).then(res => {
       if (res.data.Code === 0) {
         // 隐藏loading
-        setLoading(false)
+        // setLoading(false)
         // 修改权限 成功 - 重新获取权限 更新左侧菜单
         dispatch(getRightsList(userInfo))
       }

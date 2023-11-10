@@ -155,7 +155,7 @@ export default function UserList() {
         // console.log(record)
         // roleState 1 为默认用户的状态 开关 1 (为真) 打开 0 (为假)关闭, default 1 为默认用户 禁止删除- 修改状态
         return <Switch onChange={() => {
-          setLoading(true)
+          // setLoading(true)
           //  深度拷贝状态 - 修改 状态
           let newlist = JSON.parse(JSON.stringify(dataSource))
           newlist.map((data: any) => {
@@ -197,7 +197,7 @@ export default function UserList() {
       icon: <ExclamationOutlined></ExclamationOutlined>,
       // content:'2',
       onOk() {
-        setLoading(true)
+        // setLoading(true)
         // 删除
         deleteMethod(item)
       },
@@ -247,7 +247,7 @@ export default function UserList() {
         set:value,
       }
       console.log(value)
-      setLoading(true)
+      // setLoading(true)
       // 调用接口 + 修改状态
       handleRoleState(updateList,data)
     }).catch(err => console.log(err))
@@ -296,7 +296,7 @@ export default function UserList() {
     // 点击确认 - 获取 form 表单 数据
     form.validateFields().then((value: any) => {
       console.log(value)
-      setLoading(true)
+      // setLoading(true)
       
       //  post 到后端
       $axios({
@@ -311,7 +311,7 @@ export default function UserList() {
         headers: { 'Content-Type': 'application/json' }
       }).then((res: any) => {
         console.log(res)
-        setLoading(false)
+        // setLoading(false)
         // if(res.data.Code==0)
         let data = res.data.Data;
         console.log(data)
@@ -341,7 +341,7 @@ export default function UserList() {
       },
     }).then((res) => {
       console.log(res)
-      setLoading(false)
+      // setLoading(false)
       // 删除成功 - 深度拷贝状态 - 修改 状态
       let newlist = JSON.parse(JSON.stringify(dataSource))
       let newdata = newlist.filter((data: any) => data.id != item.id);
@@ -360,7 +360,7 @@ export default function UserList() {
       method: 'patch',
       data: data,
     }).then((res) => {
-      setLoading(false)
+      // setLoading(false)
        // 修改 dataSource 状态
        let updateList=newlist.map((item: any) => {
         //等于要修改的id 展开...data 展开修改的内容...value 合并对象 同字段会将原数据替换返回一个新对象
