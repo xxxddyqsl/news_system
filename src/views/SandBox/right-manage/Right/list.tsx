@@ -8,8 +8,11 @@ import { Button, Table, Tag, Modal, Spin, Popover, Switch } from 'antd'
 import MyTable from '../../../../components/table';
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
 import { $axios } from '../../../../util/request';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { getRightsList } from '../../../../redux/actionCreators/rightsSlice';
+// 监听 - 页面变化 获取元素宽高
+import WinResize from '../../../../components/winResize';
+import styles from '../../../../assets/css/right-manage/right.module.scss'
 const { confirm } = Modal;
 // 首次拿到权限数据 递归过滤 - 数据库返回数据   - pagepermisson 不等于1 没有权限显示 该菜单 或 后续可以通过 开关 设置1 或 0 配置用户的权限
 const rightsFilter = (data: any) => {
@@ -28,10 +31,13 @@ const delrightsFilter = (data: any, id: any) => {
 // 权限管理 - 权限 列表组件
 export default function RightList() {
   //根据store.js中设置的reducer名字，从 userSlice 空间获取state
-  const { userInfo } = useSelector((state: any) => { return state.userSlice });
-  const { rightsList } = useSelector((state: any) => { return state.rightsSlice });
+  const { userInfo } = useSelector((state: any) =>  state.userSlice ,shallowEqual);
+  const { rightsList } = useSelector((state: any) =>state.rightsSlice,shallowEqual);
   // 状态管理 - 修改函数
   const dispatch = useDispatch<any>();
+  // 获取 div 元素 获取高 传入 table 设置table 设置属性  scroll={{y: 100}} 超出滚动
+  const refElem = useRef<any>();
+  const [warperRef, setWarperRef] = useState();
 
   const [dataSource, setdataSource] = useState([]);
   const [loading, setLoading] = useState(false)
@@ -184,14 +190,21 @@ export default function RightList() {
 
   }
   return (
-    <div style={{ position: 'relative', height: '100%' }}>
+    <div className={styles['right-manage-right-list-wrapper'] + ' gg-flex-4 gg-flex-2'} ref={refElem}>
       <Spin tip="Loading" size="large" spinning={loading} style={{
         top: '50%',
         transform: ' translate(0, 50%)'
       }}>
         <div className="content" />
       </Spin>
-      <MyTable id={'MyTable'} dataSource={rightsList} rowKey={'key'} columns={columns} pagination={{
+      {/* <div className={styles['right-manage-roles-list-wrapper'] + ' gg-flex-4 gg-flex-2'} ref={refElem}> */}
+      {/* 实时监听页面高度变化 - 获取 元素 获取高*/}
+      <WinResize contentElem={refElem} callback={(size: any) => {
+        // refElem 发送变化 重新获取 refElem高度 赋值触发更新 子组件MyTable内部重新获取 refElem
+        setWarperRef(refElem.current.getBoundingClientRect())
+      }}></WinResize>
+
+      <MyTable  id={'myRightListTable'} dataSource={rightsList} warperRefObj={warperRef} warperRef={refElem.current} rowKey={'key'} columns={columns} pagination={{
         pageSize: 5,// 每页显示几条
       }}></MyTable>
       {/* <Table dataSource={dataSource}  columns={columns} scroll={{y:scrollY}}  pagination={{

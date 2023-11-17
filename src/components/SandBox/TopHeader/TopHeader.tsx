@@ -9,17 +9,20 @@ import {
 import { useNavigate,useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import { Layout, Button, theme, Avatar, Dropdown, Space } from 'antd';
+import { useDispatch } from 'react-redux';
+import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
 const { Header } = Layout;
 
 export default function TopHeader(props:any) {
   console.log(props)
+  const dispatch=useDispatch();
+
   const items: MenuProps['items'] = [
-    
     {
       key: '2',
       label: (
         <div>
-         {props.userInfo.roleName}
+         {props.userInfo?.roleName||props.userInfo?.roles?.roleName}
         </div>
       ),
       icon: <SmileOutlined />,
@@ -34,8 +37,10 @@ export default function TopHeader(props:any) {
         <div onClick={()=>{
           // console.log('退出')
           localStorage.removeItem('token');
+          // 退出登录 销毁 个人信息 持久化
+          dispatch(changeUserSlice({value:undefined,type:'userInfo'}))
           //  重定向跳转到 login
-          navigate('/login');
+          navigate('/login',{replace:true});
         }}>
           退出
         </div>
@@ -46,7 +51,6 @@ export default function TopHeader(props:any) {
    const navigate = useNavigate();
    // 路由v6 获取url信息
    const Location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -54,8 +58,8 @@ export default function TopHeader(props:any) {
     <Header style={{ padding: 0, background: colorBgContainer }}>
       <Button
         type="text"
-        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        onClick={() => setCollapsed(!collapsed)}
+        icon={props.collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={() => props.callback()}
         style={{
           fontSize: '16px',
           width: 64,
@@ -68,7 +72,7 @@ export default function TopHeader(props:any) {
       <div style={{ float: 'right', marginRight: '20px' }}>
         <Dropdown menu={{ items }}>
           <Space>
-            <span style={{ marginRight: '8px' }}>欢迎<span style={{color:'#1890ff'}}>{props.userInfo.username}</span>回来</span>
+            <span style={{ marginRight: '8px' }}>欢迎<span style={{color:'#1890ff'}}>{props.userInfo?.username}</span>回来</span>
             <Avatar size="large" icon={<UserOutlined />} />
           </Space>
         </Dropdown>

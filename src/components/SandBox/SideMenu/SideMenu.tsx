@@ -54,15 +54,15 @@ export default function SideMenu(props: any) {
   const Location = useLocation();
  //获取 路由信息 设置 默认展开的 菜单 - 值为数组形式 可多个
  const OpenKeys = ['/'+Location.pathname.split('/')[1]];
- //获取 路由信息 设置 默认显示的 菜单 - 值为数组形式 可多个
- const SelectedKeys = [Location.pathname];
+ //获取 路由信息 设置 默认显示的 菜单 - 值为数组形式 可多个 - /preview 为新闻预览 属于草稿箱 因此左侧菜单栏 草稿箱为选中状态
+ const SelectedKeys = [Location.pathname.includes('/news-manage/preview')?'/news-manage/drafts':Location.pathname];
+ console.log('菜单栏选中=>',OpenKeys,SelectedKeys,Location.pathname)
   // console.log(props)
-  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
   return (
-    <Sider trigger={null} collapsible collapsed={collapsed}>
+    <Sider trigger={null} collapsible collapsed={props.collapsed}>
       <div style={{ display: 'flex', height: '100%', flexDirection: 'column', }}>
         <div className="demo-logo-vertical" >
           DEMO

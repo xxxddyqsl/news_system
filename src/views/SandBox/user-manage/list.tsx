@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   DeleteOutlined,
   EditOutlined,
@@ -12,14 +12,16 @@ import MyForm from '../../../components/form';
 import UserForm from '../../../components/users-manage/userForm';
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
 import { $axios} from '../../../util/request';
-import { useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
 
-
-
+import WinResize from '../../../components/winResize';
+import styles from '../../../assets/css/user-manage/list.module.scss'
 let { confirm } = Modal
 export default function UserList() {
      //根据store.js中设置的reducer名字，从 userSlice 空间获取state
-  const {userInfo}=useSelector((state:any)=>{return state.userSlice});
+  const {userInfo}=useSelector((state:any)=> state.userSlice,shallowEqual);
+  const  dispatch = useDispatch()
   // 用户列表
   const [dataSource, setdataSource] = useState<any>();
   // 角色列表
@@ -36,9 +38,12 @@ export default function UserList() {
   const [open, setOpen] = useState(false);
   // 更新 modal是否显示
   const [updateOpen, setUpdateOpen] = useState(false);
-
+const [warperRef,setWarperRef]= useState();
   // 需要更新的用户对象
   const [currentUpdate, setCurrentUpdate] = useState<any>()
+
+    // 获取 div 元素 获取高 传入 table 设置table 设置属性  scroll={{y: 100}} 超出滚动
+  const refElem = useRef<any>();
   // loading 动画是否显示
   const [loading, setLoading] = useState(false)
   useEffect(() => {
@@ -139,7 +144,14 @@ export default function UserList() {
       dataIndex: 'roles',// 想要 显示对应数据的 字段 名
       key: 'id',// key 可写可不写
       render: (roles: any, record: any, index: any) => {
-        return roles.roleName
+        // roles.disable 不等于1 说明 角色已被删除
+        // console.log(roles)
+        let styleobj ={
+          // css 自定义删除线颜色、样式和粗细
+          textDecoration: roles.disable!=1?'line-through red 2px':'',
+        }
+        let title =roles.disable!=1?'角色已被删除':''
+        return <div style={styleobj} title={`${title}`}>{roles.roleName}</div>
       }
     },
     {
@@ -360,12 +372,15 @@ export default function UserList() {
       method: 'patch',
       data: data,
     }).then((res) => {
+      console.log(res)
       // setLoading(false)
        // 修改 dataSource 状态
        let updateList=newlist.map((item: any) => {
         //等于要修改的id 展开...data 展开修改的内容...value 合并对象 同字段会将原数据替换返回一个新对象
         return item =(item.id === data.id ? { ...res.data.Data } : item);
       });
+      // 修改的为自己的信息时 更新本地的userinfo 状态
+      userInfo.id ==  data.id &&   dispatch(changeUserSlice({value:{...res.data.Data},type:'userInfo'}))
       // console.log(res,updateList)
       setdataSource(updateList)
       // 关闭 modal
@@ -375,21 +390,28 @@ export default function UserList() {
   })
   }
   return (
-    <>
+    <div className={styles['user-manage-list-wrapper'] + ' gg-flex-4 gg-flex-2'}>
       <Spin tip="Loading" size="large" spinning={loading} style={{
         top: '50%',
         transform: ' translate(0, 50%)'
       }}>
         <div className="content" />
       </Spin>
+      {/* 实时监听页面高度变化 - 获取 元素 获取高*/}
+      <WinResize contentElem={refElem} callback={(size: any) => {
+        // refElem 发送变化 重新获取 refElem高度 赋值触发更新 子组件MyTable内部重新获取 refElem
+        setWarperRef(refElem.current.getBoundingClientRect())
+       }}></WinResize>
       <Button type={'primary'} onClick={handleUserAdd}>添加用户</Button>
-      <MyTable dataSource={dataSource} columns={columns} pagination={{
-        pageSize: 5,// 每页显示几条
-      }}
-        rowKey={'id'} // 自定义设置 key 字段
-      >
-        {contextHolder}
-      </MyTable>
+      <div className={styles['user-manage-list-wrapper-MyTable']} ref={refElem}>
+        <MyTable dataSource={dataSource} id={'myUserListTable'} warperRefObj={warperRef} warperRef={refElem.current} columns={columns} pagination={{
+          pageSize: 5,// 每页显示几条
+        }}
+          rowKey={'id'} // 自定义设置 key 字段
+        >
+          {contextHolder}
+        </MyTable>
+      </div>
 
       <MyModal open={open} title={'添加用户'} okText={'确定'} cancelText={'取消'} onCreate={(values: any) => {
         console.log('Received values of form: ', values);
@@ -433,6 +455,6 @@ export default function UserList() {
         </MyForm>,
       ]}>
       </MyModal>
-    </>
+    </div>
   )
 }

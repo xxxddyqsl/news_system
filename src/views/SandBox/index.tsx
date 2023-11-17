@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
+// Outlet 显示 子路由
 import { Outlet } from 'react-router-dom'
 
 import TopHeader from '../../components/SandBox/TopHeader/TopHeader'
@@ -17,12 +18,14 @@ import {
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
 import { $axios } from '../../util/request'
 //状态管理
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import { getRightsList } from '../../redux/actionCreators/rightsSlice';
 import { changMenuList } from '../../redux/actionCreators/MenuSlice';
 
+
+
 const { Content } = Layout;
-// 枚举 - 对应 菜单 显示icon 
+// 枚举 - 对应 菜单 显示icon
 const iconList: any = {
   '/home': <HomeOutlined />,
   '/user-manage': <UserOutlined />,// 一级
@@ -55,53 +58,36 @@ const rightsFilter = (data: any) => {
 // 主 - 沙盒组件
 export default function NewsSandBox() {
   //根据store.js中设置的reducer名字，从 userSlice 空间获取state
-  const { userInfo } = useSelector((state: any) => { return state.userSlice });
-  const { rightsList } = useSelector((state: any) => { return state.rightsSlice });
-  const { MenuList } = useSelector((state: any) => { return state.MenuSlice });
+  const { userInfo } = useSelector((state: any) => state.userSlice, shallowEqual);
+  // const { rightsList } = useSelector((state: any) => { return state.rightsSlice });
+  const { MenuList } = useSelector((state: any) => state.MenuSlice, shallowEqual);
   // 状态管理 - 设置
   const dispatch = useDispatch<any>();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [contentElem, setcontentElem] = useState('');
-  // 获取 Content 组件元素 获取高 传入 table 设置table 设置属性  scroll={{y: 100}} 超出滚动
-  const getcontentElem = useCallback((node: any) => setcontentElem(node), [])
-
   const {
     token: { colorBgContainer },
   } = theme.useToken();
   const [MenuData, setMenuData] = useState();
-  useEffect(()=>{
-    // 用户信息发生变化重新获取权限
-    dispatch(getRightsList(userInfo))
-    console.log('获取rights-1')
-  },[userInfo])
-  useEffect(() => {
-    if(rightsList.length > 0){
-      // 获取到权限列表 - 获取数据根据权限 设置左侧菜单栏
-      dispatch(changMenuList({ value:rightsList , type: 'MenuList' }))
-      console.log('rights列表已缓存')
-    }
-  }, [rightsList])
+
   return (
     <Layout>
       {/* 左侧栏 SideMenu  */}
-      <SideMenu MenuData={MenuList}></SideMenu>
+      <SideMenu MenuData={MenuList} collapsed={collapsed}></SideMenu>
       <Layout>
         {/* 顶部  TopHeader*/}
-        <TopHeader userInfo={userInfo}></TopHeader>
-        <Content ref={(node) => {
-          getcontentElem(node)
-          // console.log(node?.getBoundingClientRect().height)
+        <TopHeader userInfo={userInfo} collapsed={collapsed} callback={() => {
+          setCollapsed(!collapsed)
+        }}></TopHeader>
+        <Content style={{
+          margin: '24px 16px',
+          padding: 24,
+          minHeight: 280,
+          background: colorBgContainer,
         }}
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-          }}
         >
           {/* 子路由 - 内容 */}
-          <Outlet></Outlet>
+          <Outlet ></Outlet>
         </Content>
       </Layout>
     </Layout>

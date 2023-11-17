@@ -24,7 +24,7 @@ const initialState = {
     // 初始值
     MenuList:[],
 }
-// 优化 后端处理 数据库 权限pagepermisson 不等于1 没有权限显示的数据不返回 ，增加 icon字段 children数组为空 没有子节点 赋值空字符串 否则 影响子节点渲染
+// 优化 后端处理 数据库 权限pagepermisson（左侧栏中使用） 不等于1 没有权限显示的数据不返回 ，增加 icon字段 children数组为空 没有子节点 赋值空字符串 否则 影响子节点渲染
 const rightsFilter = (data) => {
     // 过滤 权限pagepermisson
     let dataFilter = data.filter((item) => item.pagepermisson && item.pagepermisson === 1);

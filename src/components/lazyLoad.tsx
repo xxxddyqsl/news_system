@@ -11,8 +11,9 @@ const lazyLoad = (path: string) => {
     // 这个时候webpack会试图打包 "../views" 这个目录下的每一个文件。这样只要path这个变量的值是预期之内的，代码就可以正常运行。
     const Comp = lazy(() => import(`../views/${path}`));
     return (
-        // 配合 lazy 懒加载 使用
-        <Suspense fallback={<div>...正在加载</div>}>
+        // 配合 lazy 懒加载 使用 - 路由的加载 使用了 nprogress 模块 (路由改变时 加载进度条) ,因此此处的 lazy 懒加载 加载提示 可以注释了
+        <Suspense fallback={<></>}>
+             {/* <Suspense fallback={<div>...正在加载</div>}> */}
             <Comp></Comp>
         </Suspense>
     )

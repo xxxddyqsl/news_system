@@ -3,6 +3,7 @@
 import { message, Spin } from "antd";
 import axios from "axios";
 import '../../assets/css/request.scss'
+import { changeUserSlice } from "../../redux/actionCreators/userSlice";
 // axios的配置文件, 可以在这里去区分开发环境和生产环境等全局一些配置
 const devBaseUrl = '/api' //本地环境 配置每一个请求的url 前缀 setupProxy.js 中配置了 /api 转发代理
 const proBaseUrl = 'http://xxxxx.com/'// 正式环境
@@ -46,7 +47,7 @@ $axios.interceptors.request.use((config) => {
     message.destroy();
     return Promise.reject(error);
 })
-export const SetupInterceptors = (navigate) => {
+export const SetupInterceptors = (navigate,dispatch) => {
     // 响应拦截器
     $axios.interceptors.response.use((response) => {
         //隐藏 正在加载
@@ -64,9 +65,21 @@ export const SetupInterceptors = (navigate) => {
         // error.response包含了服务器响应的详细信息
         const statusCode = err.response.status;
         const errorMessage = err.response.data.message;
+        // 401 token 过期
         if (err && err.response && err.response.status === 401) {
-            // 重定向
-            navigate("/login")
+            // 销毁 个人信息
+            dispatch(changeUserSlice({value:undefined,type:'userInfo'}));
+            // 清除token
+            localStorage.removeItem('token');
+             // 重定向
+             navigate("/login");
+        }else  if (err && err.response && err.response.status === 403) {// 403 角色 被删除 拒绝访问 或 没有权限
+            // 销毁 个人信息
+            dispatch(changeUserSlice({value:undefined,type:'userInfo'}));
+            // 清除token
+            localStorage.removeItem('token');
+             // 重定向
+             navigate("/login");
         }
         // console.log(err)
         message.error(err.response.data.Message || err.message)

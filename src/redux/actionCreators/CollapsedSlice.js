@@ -14,7 +14,7 @@ export const collapsedSlice = createSlice({
     reducers:{
         //{ payload }解构出来的payload是dispatch传递的数据对象
         changeCollapsed(state,action){
-            console.log(state,action)
+            // console.log(state,action)
             // 内置了immutable不可变对象来管理state,不用再自己拷贝数据进行处理
             state.collapsed = !state.collapsed;
         }

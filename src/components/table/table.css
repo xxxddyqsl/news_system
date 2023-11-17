@@ -1,5 +1,5 @@
 
 /* 修改 table组件的 滚动条 超出显示 不强制显示 */
-#MyTable .ant-table-body{
+.MyTable .ant-table-body{
     overflow: auto !important;
 }
