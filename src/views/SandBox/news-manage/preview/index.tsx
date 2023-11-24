@@ -3,19 +3,25 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Descriptions } from 'antd';
 // PageHeader 在antd 5.0 中 已废弃组件 单独 安装 yarn add @ant-design/pro-layout 做兼容
 import { PageHeader } from '@ant-design/pro-layout'
-import { $axios } from '../../../../util/request';
+import axios from 'axios'
 // moment格式化日期 模块
 import moment from 'moment';
 
 
 
 // 枚举 - 对应 审核状态
-const auditStateList = {
-  0:'未审核', // 说明是草稿
-  1:'正在审核',
-  2:'审核通过',
-  3:'审核未通过',
+const auditStateList :any = {
+  0:'草稿箱', // 说明是草稿
+  1:'审核中',
+  2:'已通过',
+  3:'未通过',
 }
+// const auditStateList = {
+//   0:'未审核', // 说明是草稿
+//   1:'正在审核',
+//   2:'审核通过',
+//   3:'审核未通过',
+// }
 // 枚举 - 对应 发布状态
 const publishStateList={
   0:'未发布',
@@ -23,7 +29,13 @@ const publishStateList={
   2:'已上线',
   3:'已下线',
 }
-
+// 统一 状态 对应颜色
+const colorState:any= {
+  0:'rgb(45, 183, 245)',
+  1:'orange',
+  2:'green',
+  3:'red',
+}
 interface newInfoType {
   // author: string;
   // auditState?:any,
@@ -39,11 +51,11 @@ export default function Preview() {
   const navigate = useNavigate();
   const [newInfo, setNewInfo] = useState<newInfoType>({})
   useEffect(()=>{
-    console.log(newInfo.length)
+    console.log(newInfo)
   },[newInfo])
   useEffect(() => {
-    // 获取新闻类别
-    $axios({
+    // 获取新闻
+    axios({
       url: `/api/news/${state.id}`,
       method: 'get',
     }).then(res => {
@@ -77,29 +89,29 @@ export default function Preview() {
           <Descriptions.Item label="创建者">{newInfo.author}</Descriptions.Item>
           <Descriptions.Item label="创建时间">
             {/* 注意  YYYY-MM-DD HH:mm:ss'  HH 小写时 为12小时制的时间 大写为 24小时制的时间*/}
-            <a>{newInfo.createTime ?moment(newInfo.createTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</a>
+            <a style={{color:'#108ee9'}}>{newInfo.createTime ?moment(newInfo.createTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</a>
           </Descriptions.Item>
           <Descriptions.Item label="发布时间">
-          <a>{newInfo.publishTime ?moment(newInfo.publishTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</a>
+          <a style={{color:'#108ee9'}}>{newInfo.publishTime ?moment(newInfo.publishTime).format('YYYY-MM-DD HH:mm:ss') : '-'}</a>
           </Descriptions.Item>
           <Descriptions.Item label="区域">
-            {newInfo.region===''?'全球':newInfo.region}
+          <span style={{color:'#108ee9'}}> {newInfo.region===''?'全球':newInfo.region}</span>
           </Descriptions.Item>
           <Descriptions.Item label="审核状态" style={{color:'red'}}>
             {/* ts 报错 Ts中string、number和any等类型 不能当做索引用   */}
-            <span style={{color:'red'}}>{(auditStateList as any )[newInfo.auditState]}</span>
+            <span style={{color: colorState[newInfo.auditState] }}>{(auditStateList as any )[newInfo.auditState]}</span>
           </Descriptions.Item>
           <Descriptions.Item label="发布状态" style={{color:'red'}}>
-            <span style={{color:'red'}}>{(publishStateList as any )[newInfo.publishState]}</span>
+            <span style={{color: colorState[newInfo.publishState]}}>{(publishStateList as any )[newInfo.publishState]}</span>
           </Descriptions.Item>
           <Descriptions.Item label="访问数量">
-          <span style={{color:'#55871d'}}>{newInfo.view}</span>
+          <span style={{color:'lime'}}>{newInfo.view}</span>
           </Descriptions.Item>
           <Descriptions.Item label="点赞数量">
-          <span style={{color:'#55871d'}}>{newInfo.star}</span>
+          <span style={{color:'lime'}}>{newInfo.star}</span>
           </Descriptions.Item>
           <Descriptions.Item label="评论数量">
-          <span style={{color:'#55871d'}}>{newInfo.comment}</span>
+          <span style={{color:'lime'}}>{newInfo.comment}</span>
           </Descriptions.Item>
         </Descriptions>
       </PageHeader>

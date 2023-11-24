@@ -9,12 +9,15 @@ import {
 import { useNavigate,useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import { Layout, Button, theme, Avatar, Dropdown, Space } from 'antd';
-import { useDispatch } from 'react-redux';
+//状态管理
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
+
+
 const { Header } = Layout;
 
 export default function TopHeader(props:any) {
-  console.log(props)
+  // console.log(props)
   const dispatch=useDispatch();
 
   const items: MenuProps['items'] = [

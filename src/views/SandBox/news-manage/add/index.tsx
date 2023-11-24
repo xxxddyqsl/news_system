@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 
-// PageHeader 在antd 5.0 中 已废弃组件 单独 安装 yarn add @ant-design/pro-layout 做兼容
-import { PageHeader } from '@ant-design/pro-layout'
-import { Button, Steps, Form, Input, Select, message, notification } from 'antd';
+import { Button, Form, message, notification } from 'antd';
 
-import styles from '../../../../assets/css/news-manage/add.module.scss'
+import styles from '../../../../assets/css/news-manage/newsEdit.module.scss'
 import MyForm from '../../../../components/form';
-import { NewsBasicInfo, NewsContent } from '../../../../components/SandBox/NewsManage/add';
-import { $axios } from '../../../../util/request';
+import { NewsBasicInfoEdit, NewsContent } from '../../../../components/SandBox/NewsManage/edit';
+import axios from 'axios'
 import MyEditor from '../../../../components/Editor';
 import { useSelector, shallowEqual } from 'react-redux';
 
@@ -60,7 +58,7 @@ function format(format: string, fdate: any) {
   return format;
 };
 // 新闻管理 -撰写新闻 组件
-export default function NewsAdd() {
+export default function NewsAdd(props: any) {
   //根据store.js中设置的reducer名字，从 userSlice 空间获取state
   const { userInfo } = useSelector((state: any) => state.userSlice, shallowEqual);
   // current 撰写新闻的当前步骤  0 - 2
@@ -72,6 +70,14 @@ export default function NewsAdd() {
   const [CategoryList, setCategoryList] = useState([]);
   const [editorContent, setEditorContent] = useState('');
   const navigate = useNavigate();
+  // 配置 PageHeader 属性 
+  const configuration = {
+    // 传入 返回
+    // onBack :()=>{
+    //     navigate(-1)
+    // },
+    title:'撰写新闻'
+}
   const handleChangeCategory = (value: number, newForm: any) => {
     console.log(value, newForm)
   }
@@ -98,7 +104,7 @@ export default function NewsAdd() {
   }
   useEffect(() => {
     // 获取新闻类别
-    $axios({
+    axios({
       url: `/api/newsCategories`,
       method: 'get',
     }).then(res => {
@@ -126,7 +132,7 @@ export default function NewsAdd() {
       publishTime: null,
     }
     // 提交数据库
-    $axios({
+    axios({
       url: `/api/newsSavedraft`,
       method: 'post',
       data: data,
@@ -138,7 +144,7 @@ export default function NewsAdd() {
         // Notification 通知提醒框
         notification.info({
           message: `通知`,
-          description: `您可以到${auditState === 0 ? '草稿箱' : '审核列表'}中查看您的新闻`,
+          description: `您可以到【${auditState === 0 ? '新闻管理/草稿箱' : '审核管理/审核列表'}】中查看您的新闻`,
           placement: 'bottomRight', // bottomRight 在右下角显示 默认为右上角
         })
       }
@@ -146,41 +152,30 @@ export default function NewsAdd() {
       console.log(err)
     });
   }
+  console.log(props)
   return (
     <div className={styles.wrapper + ' gg-flex-4 gg-flex-2'}>
-      <PageHeader
-        className="site-page-header"
-        // onBack={() => null}
-        title="撰写新闻" // 主标题
-      // subTitle="This is a subtitle" // 副标题
-      />
-      <Steps
+      <NewsBasicInfoEdit
+        configuration={configuration}
         current={current}
         items={items}
-      />
-      <div className={styles.main}>
-        <div className={current === 0 ? '' : styles.active}>
-          <MyForm  {...layout} form={newsForm} name={'newsForm'}>
-            <NewsBasicInfo CategoryList={CategoryList} handleChangeCategory={handleChangeCategory}></NewsBasicInfo>
-          </MyForm>
+        CategoryList={CategoryList}
+        styles={styles}
+        layout={layout}
+        newsForm={newsForm}
+        setEditorContent={(value: any) => { setEditorContent(value) }}
+      >
+        <div className={styles.footer}>
+          {
+            current === 2 && <span>
+              <Button type='primary' onClick={() => handleSave(0)}> 保存草稿</Button>
+              <Button danger onClick={() => handleSave(1)}> 提交审核</Button>
+            </span>
+          }
+          {current < 2 && <Button type='primary' onClick={handleNext}>下一步</Button>}
+          {current > 0 && <Button onClick={() => { setCurrent(current - 1) }}>上一步</Button>}
         </div>
-        <div className={current === 1 ? '' : styles.active} style={{ height: '100%' }}>
-          {/* <NewsContent></NewsContent> */}
-          <MyEditor getContent={(value: any) => { setEditorContent(value) }}></MyEditor>
-        </div>
-        <div className={current === 2 ? '' : styles.active}>333</div>
-
-      </div>
-      <div className={styles.footer}>
-        {
-          current === 2 && <span>
-            <Button type='primary' onClick={() => handleSave(0)}> 保存草稿</Button>
-            <Button danger onClick={() => handleSave(1)}> 提交审核</Button>
-          </span>
-        }
-        {current < 2 && <Button type='primary' onClick={handleNext}>下一步</Button>}
-        {current > 0 && <Button onClick={() => { setCurrent(current - 1) }}>上一步</Button>}
-      </div>
+      </NewsBasicInfoEdit>
     </div>
   )
 }

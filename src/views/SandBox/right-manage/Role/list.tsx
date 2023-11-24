@@ -12,7 +12,7 @@ import MyTree from '../../../../components/SandBox/RightsManage/Role/tree'
 import styles from '../../../../assets/css/right-manage/role.module.scss'
 import Item from 'antd/es/list/Item';
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
-import { $axios } from '../../../../util/request';
+import axios from 'axios'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { getRightsList } from '../../../../redux/actionCreators/rightsSlice';
 import WinResize from '../../../../components/winResize';
@@ -159,7 +159,7 @@ export default function RoleList() {
       setData.rightsdele = delerights.join(',')
     }
 
-    $axios({
+    axios({
       url: '/api/roles',
       method: 'put',
       data: {
@@ -234,7 +234,7 @@ export default function RoleList() {
   //删除-调用接口
   const deleteMethod = (data: any) => {
     console.log(data)
-    $axios({
+    axios({
       url: '/api/roles',
       method: 'delete',
       params: {
@@ -255,7 +255,7 @@ export default function RoleList() {
   }
   // 获取 角色列表
   useEffect(() => {
-    $axios({
+    axios({
       url: '/api/roles',
       method: 'get',
     }).then(res => {
@@ -271,7 +271,7 @@ export default function RoleList() {
   }, [])
   // 获取 权限列表
   useEffect(() => {
-    // $axios({
+    // axios({
     //   url: '/api/rights',
     //   method: 'get',
     //   params: {
@@ -380,6 +380,15 @@ export default function RoleList() {
   useEffect(() => {
     // console.log(checked,halfChecked)
   }, [halfChecked])
+  
+   // 自定义 table 配置
+   const configurationTable={
+    columns:columns, // table 头
+    pagination:{
+      pageSize: 5,// 每页显示几条
+    },
+    dataSource:dataSource,// table 数据
+  }
   return (
     <div className={styles['right-manage-roles-list-wrapper'] + ' gg-flex-4 gg-flex-2'} ref={refElem}>
       {/* 实时监听页面高度变化 - 获取 元素 获取高*/}
@@ -387,9 +396,7 @@ export default function RoleList() {
         // refElem 发送变化 重新获取 refElem高度 赋值触发更新 子组件MyTable内部重新获取 refElem
         setWarperRef(refElem.current.getBoundingClientRect())
       }}></WinResize>
-      <MyTable id={'myRolesListTable'} dataSource={dataSource} warperRefObj={warperRef} warperRef={refElem.current} columns={columns} pagination={{
-        pageSize: 5,// 每页显示几条
-      }}></MyTable>
+      <MyTable id={'myRolesListTable'} configurationTable={configurationTable} warperRefObj={warperRef} warperRef={refElem.current} ></MyTable>
 
 
       <Modal title="权限分配" open={isModalOpen} onOk={() => { handleOk() }} onCancel={handleCancel}>

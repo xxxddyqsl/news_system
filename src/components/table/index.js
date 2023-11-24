@@ -49,15 +49,15 @@ export default function MyTable(props) {
       <Table
         id={props.id}
         className="components-table-demo-nested MyTable"
-        columns={props.columns}
-        dataSource={props.dataSource}
+        // columns={props.columns}
+        // dataSource={props.dataSource}
         scroll={{ y: scrollY  }}
-        pagination={props.pagination}
+        // pagination={props.pagination}
         style={{ overflow: 'auto !important' }}
         rowKey={(item) => { // 自定义 指定 列表中的每一项 key值 默认为数据中的key字段 
           return (item[props.rowKey] || item.id);
         }}
-
+        {...props.configurationTable} // 传入的 table 配置项 包含 dataSource数据
       />
       {/* 插槽 */}
       {props.children}

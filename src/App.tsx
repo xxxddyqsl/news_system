@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import './assets/css/style.scss'
 import { BrowserRouter, useNavigate } from 'react-router-dom'
@@ -7,16 +7,25 @@ import { ErrorBoundary } from 'react-error-boundary'
 import MRouters from './routers'
 import { useDispatch } from 'react-redux'
 // axios 返回状态码 401 需要重定向
-import { SetupInterceptors } from './util/request'
+// import { SetupInterceptors ,useSetupInterceptors, useSetupInterceptorsRequest} from './util/request'
 import ErrorComp, { useCallbackWithErrorHandler, useThrowAsyncError } from './components/ErrorBoundary'
+import {initialRequest} from './util/request_http'
 function NavigateFunctionComponent() {
+   // axios 请求发出前 方式2 自定义hooks函数 调用hooks
+  
+  //  useSetupInterceptorsRequest();
+
   let navigate = useNavigate();
   const [ran, setRan] = useState(false);
   const dispatch = useDispatch();
-  
+  // 方式2 自定义hooks函数 调用hooks （useNavigate ，useDispatch）  navigate跳转 +dispatch 修改状态
+  // useSetupInterceptors();
+ 
   {/* 只运行一次安装程序 传入 navigate 重定向 hook */ }
   if (!ran) {
-    SetupInterceptors(navigate,dispatch);
+    // 方式1  自定义 函数 调用传入hooks  navigate跳转 +dispatch 修改状态
+    // SetupInterceptors(navigate,dispatch);
+    initialRequest(navigate,dispatch);
     setRan(true);
   }
   return <></>;

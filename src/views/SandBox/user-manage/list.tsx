@@ -10,8 +10,7 @@ import { Modal, message, Form, Input, Button, Popover, Switch, Spin } from 'antd
 import MyModal from '../../../components/modal';
 import MyForm from '../../../components/form';
 import UserForm from '../../../components/users-manage/userForm';
-// 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
-import { $axios} from '../../../util/request';
+import axios from 'axios'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
 
@@ -47,7 +46,7 @@ const [warperRef,setWarperRef]= useState();
   // loading 动画是否显示
   const [loading, setLoading] = useState(false)
   useEffect(() => {
-    $axios({
+    axios({
       url: `/api/users`,
       method: 'get',
       params:{
@@ -70,7 +69,7 @@ const [warperRef,setWarperRef]= useState();
   }, [])
   useEffect(() => {
     // 获取 角色列表
-    $axios({
+    axios({
       url: `/api/roles`,
       method: 'get',
     }).then(res => {
@@ -89,7 +88,7 @@ const [warperRef,setWarperRef]= useState();
   }, [])
   useEffect(() => {
     // 获取 区域列表
-    $axios({
+    axios({
       url: `/api/regions`,
       method: 'get',
     }).then(res => {
@@ -311,7 +310,7 @@ const [warperRef,setWarperRef]= useState();
       // setLoading(true)
       
       //  post 到后端
-      $axios({
+      axios({
         url: `/api/users`,
         method: 'post',
         // params:{...value}, //params 的形式传参数是url中 query
@@ -345,7 +344,7 @@ const [warperRef,setWarperRef]= useState();
   //  删除用户
   const deleteMethod = (item: any) => {
     console.log(item)
-    $axios({
+    axios({
       url: `/api/users`,
       method: 'delete',
       data: {
@@ -367,7 +366,7 @@ const [warperRef,setWarperRef]= useState();
     // console.log(res)
     // setdataSource(newlist)
 
-    $axios({
+    axios({
       url: `/api/users`,
       method: 'patch',
       data: data,
@@ -389,24 +388,30 @@ const [warperRef,setWarperRef]= useState();
       console.log(err)
   })
   }
+   // 自定义 table 配置
+   const configurationTable={
+    columns:columns, // table 头
+    pagination:{
+      pageSize: 5,// 每页显示几条
+    },
+    dataSource:dataSource,// table 数据
+  }
   return (
     <div className={styles['user-manage-list-wrapper'] + ' gg-flex-4 gg-flex-2'}>
-      <Spin tip="Loading" size="large" spinning={loading} style={{
+      {/* <Spin tip="Loading" size="large" spinning={loading} style={{
         top: '50%',
         transform: ' translate(0, 50%)'
       }}>
         <div className="content" />
-      </Spin>
+      </Spin> */}
       {/* 实时监听页面高度变化 - 获取 元素 获取高*/}
       <WinResize contentElem={refElem} callback={(size: any) => {
         // refElem 发送变化 重新获取 refElem高度 赋值触发更新 子组件MyTable内部重新获取 refElem
         setWarperRef(refElem.current.getBoundingClientRect())
        }}></WinResize>
-      <Button type={'primary'} onClick={handleUserAdd}>添加用户</Button>
+      <Button type={'primary'} onClick={handleUserAdd} style={{ marginBottom: 16 }}>添加用户</Button>
       <div className={styles['user-manage-list-wrapper-MyTable']} ref={refElem}>
-        <MyTable dataSource={dataSource} id={'myUserListTable'} warperRefObj={warperRef} warperRef={refElem.current} columns={columns} pagination={{
-          pageSize: 5,// 每页显示几条
-        }}
+        <MyTable configurationTable={configurationTable} id={'myUserListTable'} warperRefObj={warperRef} warperRef={refElem.current}
           rowKey={'id'} // 自定义设置 key 字段
         >
           {contextHolder}

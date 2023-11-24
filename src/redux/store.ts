@@ -1,5 +1,5 @@
-// applyMiddleware - 应用中间件的意思 可以写多个中间件
-// import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
+// applyMiddleware - 应用中间件的意思 可以写多个中间件 - 注意 redux 中 createStore 已弃用 可使用 legacy_createStore
+// import { createStore, combineReducers, applyMiddleware, compose,legacy_createStore } from 'redux'
 
 import {configureStore,combineReducers,applyMiddleware,compose} from '@reduxjs/toolkit'
 
@@ -16,6 +16,7 @@ import userSlice from './actionCreators/userSlice'
 import rightsSlice from './actionCreators/rightsSlice'
 import MenuSlice from './actionCreators/MenuSlice'
 import routersSlice from './actionCreators/routersSlice'
+import loadingSlice from './loadingSlice'
 // 合并 各自管理的多个reducer 函数 固定语法 必须写在{xxx:xxx,xxxx}中
 const reducer = combineReducers({
     // 写法1：键名：键值
@@ -25,6 +26,7 @@ const reducer = combineReducers({
     rightsSlice,// 权限
     MenuSlice,//左侧菜单栏
     routersSlice,
+    loadingSlice,// axios 请求触发  loading
 })
 // redux-persist 数据持久化相关规则配置
 const persistConfig = {
@@ -36,7 +38,7 @@ const persistConfig = {
     // 黑名单 不缓存的黑名单里的 其他的都会持久化数据状态 TabBerReducer 就是 在 combineReducers 中 自己声明的键名 TabBerReducer
     // blacklist:['TabBerReducer'],
     // 白名单 只会缓存白名单里的 数据状态 其他的都不会持久化数据状态，需要缓存的 CityReducer 就是 在 combineReducers 中 自己声明的键名 CityReducer
-    whitelist: ['CollapsedSlice','userSlice'],
+    whitelist: ['userSlice'],
 }
 // 持久化根 reducer  persistReducer数据持久化reducer
 const persistedReducer = persistReducer(persistConfig, reducer);

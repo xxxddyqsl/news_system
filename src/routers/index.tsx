@@ -305,6 +305,7 @@ export default function MRouters() {
             console.log('获取权限-设置菜单栏+路由权限', routesList, createRoutes(rightsList))
         }
     }, [rightsList])
+   
     // const Element = useRoutes(routes)
     const Element = useRoutes(routesList)
     return (

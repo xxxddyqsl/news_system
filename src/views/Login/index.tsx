@@ -5,14 +5,11 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 import MyParticles from '../../components/particles';
 import styles from '../../assets/css/login.module.scss'
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
-import { $axios} from'../../util/request'
-
 import {useSelector,useDispatch} from 'react-redux'
-// 测试使用 @reduxjs/toolkit
-// import { changeCollapsed } from '../../redux/actionCreators/CollapsedSlice';
 import { useNavigate } from 'react-router-dom';
 // 状态管理 - 传入登录返回的个人信息
 import {changeUserSlice} from '../../redux/actionCreators/userSlice';
+import axios from 'axios';
 
 
 export default function Login() {
@@ -25,9 +22,8 @@ export default function Login() {
   const navigate=useNavigate();
   // console.log(collapsed)
   const onFinish = (values: any) => {
-    // dispatch(changeCollapsed({value:'2',type:'Redirect'}))
     console.log('Received values of form: ', values);
-    $axios({
+    axios({
       url: `/login`,
       method: 'post',
       // params:{...value}, //params 的形式传参数是url中 query

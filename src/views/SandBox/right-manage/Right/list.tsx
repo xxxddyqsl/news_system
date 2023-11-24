@@ -7,7 +7,7 @@ import {
 import { Button, Table, Tag, Modal, Spin, Popover, Switch } from 'antd'
 import MyTable from '../../../../components/table';
 // 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
-import { $axios } from '../../../../util/request';
+import axios from 'axios'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { getRightsList } from '../../../../redux/actionCreators/rightsSlice';
 // 监听 - 页面变化 获取元素宽高
@@ -42,7 +42,7 @@ export default function RightList() {
   const [dataSource, setdataSource] = useState([]);
   const [loading, setLoading] = useState(false)
   useEffect(() => {
-    //   $axios({
+    //   axios({
     //     url: '/api/rights',
     //     method: 'get',
     //     params: {
@@ -123,7 +123,7 @@ export default function RightList() {
     // grade 层级 1级为1 ， 2级为2
     let { grade } = data;
     // 后端 删除的 id 在 grade哪一层
-    $axios({
+    axios({
       url: `/api/rights/${grade}/${data.id}`,
       method: 'delete',
     }).then(res => {
@@ -170,7 +170,7 @@ export default function RightList() {
 
     let { id, grade } = data;
     // 调用接口 修改权限 - RESTful架构风格 - put
-    $axios({
+    axios({
       url: `/api/rights/${grade}/${id}`, // grade 告诉后端 修改的权限 所在层级+id
       method: 'put',
       params: {
@@ -189,14 +189,22 @@ export default function RightList() {
     })
 
   }
+   // 自定义 table 配置
+   const configurationTable={
+    columns:columns, // table 头
+    pagination:{
+      pageSize: 5,// 每页显示几条
+    },
+    dataSource:rightsList,// table 数据
+  }
   return (
     <div className={styles['right-manage-right-list-wrapper'] + ' gg-flex-4 gg-flex-2'} ref={refElem}>
-      <Spin tip="Loading" size="large" spinning={loading} style={{
+      {/* <Spin tip="Loading" size="large" spinning={loading} style={{
         top: '50%',
         transform: ' translate(0, 50%)'
       }}>
         <div className="content" />
-      </Spin>
+      </Spin> */}
       {/* <div className={styles['right-manage-roles-list-wrapper'] + ' gg-flex-4 gg-flex-2'} ref={refElem}> */}
       {/* 实时监听页面高度变化 - 获取 元素 获取高*/}
       <WinResize contentElem={refElem} callback={(size: any) => {
@@ -204,9 +212,7 @@ export default function RightList() {
         setWarperRef(refElem.current.getBoundingClientRect())
       }}></WinResize>
 
-      <MyTable  id={'myRightListTable'} dataSource={rightsList} warperRefObj={warperRef} warperRef={refElem.current} rowKey={'key'} columns={columns} pagination={{
-        pageSize: 5,// 每页显示几条
-      }}></MyTable>
+      <MyTable  id={'myRightListTable'} configurationTable={configurationTable} warperRefObj={warperRef} warperRef={refElem.current} rowKey={'key'}></MyTable>
       {/* <Table dataSource={dataSource}  columns={columns} scroll={{y:scrollY}}  pagination={{
         pageSize: 5,// 每页显示几条
       }} /> */}

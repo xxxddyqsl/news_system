@@ -5,7 +5,7 @@ import { Outlet } from 'react-router-dom'
 import TopHeader from '../../components/SandBox/TopHeader/TopHeader'
 import SideMenu from '../../components/SandBox/SideMenu/SideMenu'
 
-import { Layout, theme } from 'antd';
+import { Layout, Spin, theme } from 'antd';
 
 import {
   MenuFoldOutlined,
@@ -15,13 +15,10 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
-// 导入 二次封装 axios 内包含了 获取 token 存入本地 + 发起请求携带token
-import { $axios } from '../../util/request'
+
 //状态管理
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
-import { getRightsList } from '../../redux/actionCreators/rightsSlice';
-import { changMenuList } from '../../redux/actionCreators/MenuSlice';
-
+import { changeCollapsed } from '../../redux/actionCreators/CollapsedSlice';
 
 
 const { Content } = Layout;
@@ -61,10 +58,13 @@ export default function NewsSandBox() {
   const { userInfo } = useSelector((state: any) => state.userSlice, shallowEqual);
   // const { rightsList } = useSelector((state: any) => { return state.rightsSlice });
   const { MenuList } = useSelector((state: any) => state.MenuSlice, shallowEqual);
+  //状态管理 - 控制左侧菜单栏 折叠 展开
+  const { collapsed } = useSelector((state: any) => state.CollapsedSlice, shallowEqual);
+   //状态管理 - 控制loading 是否显示
+   const { loading } = useSelector((state: any) => state.loadingSlice, shallowEqual);
   // 状态管理 - 设置
   const dispatch = useDispatch<any>();
-
-  const [collapsed, setCollapsed] = useState(false);
+  // const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -74,21 +74,27 @@ export default function NewsSandBox() {
     <Layout>
       {/* 左侧栏 SideMenu  */}
       <SideMenu MenuData={MenuList} collapsed={collapsed}></SideMenu>
+
       <Layout>
-        {/* 顶部  TopHeader*/}
-        <TopHeader userInfo={userInfo} collapsed={collapsed} callback={() => {
-          setCollapsed(!collapsed)
-        }}></TopHeader>
-        <Content style={{
-          margin: '24px 16px',
-          padding: 24,
-          minHeight: 280,
-          background: colorBgContainer,
-        }}
-        >
-          {/* 子路由 - 内容 */}
-          <Outlet ></Outlet>
-        </Content>
+          {/* 顶部  TopHeader*/}
+          <TopHeader userInfo={userInfo} collapsed={collapsed} callback={() => {
+            // setCollapsed(!collapsed)
+            dispatch(changeCollapsed({ value: !collapsed, type: 'collapsed' }))
+          }}></TopHeader>
+          <Content style={{
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: 280,
+            overflow:'auto',
+            background: colorBgContainer,
+          }}
+          className='SandBox-wrapper-Content'
+          >
+            <Spin size="large" spinning={loading} style={{ height: '100%' }}>
+            {/* 子路由 - 内容 */}
+            <Outlet ></Outlet>
+            </Spin>
+          </Content>
       </Layout>
     </Layout>
   )

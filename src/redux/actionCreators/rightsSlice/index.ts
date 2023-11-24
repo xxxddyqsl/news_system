@@ -1,6 +1,6 @@
 // 使用 createSlice 方法 创建一个slice。每一个slice里面包含了reducer和actions，可以实现模块化的封装。所有的相关操作都独立在一个文件中完成。
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { $axios } from "../../../util/request";
+import axios from 'axios'
 import { AppDispatch } from "../../store";
 // 定义 初始值 initialState 接口
 interface initialStateType {
@@ -44,7 +44,7 @@ export const { changRightsList } = rightsSlice.actions;
 export const getRightsList = (params: any) => {
   return (dispatch: AppDispatch) => {
     try {
-      $axios({
+      axios({
         url: "/api/rights",
         method: "get",
         params: {
@@ -69,7 +69,7 @@ export const fetchUserById = createAsyncThunk(
   async (params: any, thunkAPI) => {
     console.log(params, thunkAPI);
     try {
-    const  res = await $axios({
+    const  res = await axios({
       url: "/api/rights",
       method: "get",
       params: {
