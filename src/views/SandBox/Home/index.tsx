@@ -6,15 +6,16 @@ import {
     SettingOutlined,
     HeartTwoTone,
     StarTwoTone,
+    PieChartOutlined,
 } from '@ant-design/icons'
-import { Row, Col, Card, List, Avatar } from 'antd'
+import { Row, Col, Card, List, Avatar,Drawer } from 'antd'
 import { useHome } from '../../../components/SandBox/Home/useHome'
 import { NavLink } from 'react-router-dom'
-import HomeECharts from '../../../components/SandBox/Home/homeECharts'
+import {HomeEChartsBar,HomeEChartsPie} from '../../../components/SandBox/Home/homeECharts'
 const { Meta } = Card
 
 export default function Home() {
-    const { viewList, starList, userInfo,newsCount } = useHome()
+    const { viewList, starList, userInfo,newsCount,open, showDrawer,  onClose } = useHome()
     return (
         <>
             {/* 栅格 */}
@@ -82,7 +83,8 @@ export default function Home() {
                             />
                         }
                         actions={[
-                            <SettingOutlined key="setting" />,
+                            <PieChartOutlined   key="setting" onClick={showDrawer}/>,
+                            // <SettingOutlined key="setting" />,
                             <EditOutlined key="edit" />,
                             <EllipsisOutlined key="ellipsis" />,
                         ]}
@@ -108,8 +110,12 @@ export default function Home() {
                     </Card>
                 </Col>
             </Row>
-            {/* ECharts 图表部分 */}
-            <HomeECharts newsCount={newsCount}></HomeECharts>
+            <Drawer width={500} title="Basic Drawer" placement="right" onClose={onClose} open={open}>
+                 {/* ECharts 图表部分  饼状图*/}
+                <HomeEChartsPie newsCount={newsCount}></HomeEChartsPie>
+            </Drawer>
+            {/* ECharts 图表部分  柱状图*/}
+            <HomeEChartsBar newsCount={newsCount}></HomeEChartsBar>
         </>
     )
 }

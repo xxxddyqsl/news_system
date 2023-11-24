@@ -67,18 +67,6 @@ export function useHome() {
     // 统计出的 每个新闻类型 已发布 (根据  字段 及其 字段状态 如当前 publishState:2  其他 auditState:2 也是可以 ) 的 数量
     const [newsCount,setNewsCount]= useState<Array<newsCountType>>([]);
     useEffect(()=>{
-        axios({
-            url: `/api/newsCount`,
-            method:'get',
-            params:{
-                publishState:2
-            },
-            // params:{
-            //   publishState:2,//发布状态 ：  小于等于 1 的数据 ，需要 不是 2 、3 未发布上线的数据
-            // //   LIMIT:10, // 要 多少条数据 不传 默认返回10条
-            // sortkey:'view',//按 什么排序 star 或 view 
-            // }
-        }).then(res=>console.log( res)).catch(error=>console.log( error))
         getNewsCount({publishState:2}).then(res=>setNewsCount(res))
         // console.log( userInfo)
         // 获取 view 浏览量列表 前10条
@@ -86,10 +74,22 @@ export function useHome() {
         // 获取 star 点赞量列表 前10条
         getDescList({publishState:2,LIMIT:10, sortkey:'star',}).then(res=>setStarList(res))
     },[])
+    const [open, setOpen] = useState(false);
+
+    const showDrawer = () => {
+      setOpen(true);
+    };
+  
+    const onClose = () => {
+      setOpen(false);
+    };
     return {
         viewList,
         starList,
         userInfo,
         newsCount,
+        open,
+        showDrawer,
+        onClose
     }
 }

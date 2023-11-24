@@ -1,7 +1,8 @@
 import React, { RefObject, useCallback, useEffect, useRef } from 'react'
 // * as MyECharts 将echarts中使用的东西 导入到 MyECharts
 import * as MyECharts from 'echarts'
-const CreateECharts = (
+// 创建ECharts 柱状图表
+const CreateEChartsBar = (
     barRef: RefObject<HTMLDivElement>,
     newsCount: Array<newsCountType>
 ) => {
@@ -58,8 +59,8 @@ interface propsType {
     // 可如上声明属性，也可以将 剩下的属性可通过 任意属性 自定义键值类型（[name]） 和 自定义 键key (key值any任意类型) 如  [propName: string]: any;
     [propName: string]: any
 }
-
-export default function HomeECharts(props: propsType) {
+// 柱状图
+export   function HomeEChartsBar(props: propsType) {
     const barRef = useRef<HTMLDivElement | null>(null)
     // useCallback(()=>{
 
@@ -71,11 +72,83 @@ export default function HomeECharts(props: propsType) {
         }
     },[])
     useEffect(() => {
-        // 创建ECharts 图表
-        CreateECharts(barRef, props.newsCount)
+        // 创建ECharts 柱状图表
+        CreateEChartsBar(barRef, props.newsCount)
     }, [props.newsCount])
     return (
         // <div id="main" style={{width:'100%', height: '400px' }}></div>
         <div ref={barRef} style={{ width: '100%', height: '400px' }}></div>
+    )
+}
+//创建ECharts 饼状图表
+const CreateEChartsPie = (
+    pieRef: RefObject<HTMLDivElement>,
+    newsCount: Array<newsCountType>
+) => {
+    // 基于准备好的dom，初始化echarts实例
+    //   var myChart = MyECharts.init(document.getElementById('main'));
+    var myChart = MyECharts.init(pieRef.current)
+    // 指定图表的配置项和数据
+    var option = {
+        title: {
+          text: 'Referer of a Website',
+          subtext: 'Fake Data',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'item'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left'
+        },
+        series: [
+          {
+            name: 'Access From',
+            type: 'pie',
+            radius: '50%',
+            data: [
+              { value: 1048, name: 'Search Engine' },
+              { value: 735, name: 'Direct' },
+              { value: 580, name: 'Email' },
+              { value: 484, name: 'Union Ads' },
+              { value: 300, name: 'Video Ads' }
+            ],
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+    // 监听页面宽度变化
+    window.onresize=()=>{
+        console.log('onresize')
+        // 重新渲染 ECharts
+        myChart.resize()
+    }
+}
+
+export const HomeEChartsPie = (props: propsType)=> {
+    const pieRef = useRef<HTMLDivElement | null>(null)
+    useEffect(() => {
+        // 组件销毁时 销毁  上方// 监听页面宽度变化 重新渲染 ECharts
+        return ()=>{
+            window.onresize = null;
+        }
+    },[])
+    useEffect(() => {
+        // 创建ECharts 饼状图表
+        CreateEChartsPie(pieRef, props.newsCount)
+    }, [props.newsCount])
+    return (
+        // <div id="main" style={{width:'100%', height: '400px' }}></div>
+        <div ref={pieRef} style={{ width: '100%', height: '400px' }}></div>
     )
 }
