@@ -24,7 +24,7 @@ const setToolbar = {
         uploadCallback: uploadCallback,//本地图片
         previewImage: true,
         inputAccept: 'image/gif,image/jpeg,image/jpg,image/png',
-        alt: { present: true, mandatory: true ,previewImage:true},
+        alt: { present: true, mandatory: false ,previewImage:true},
         // 富文本中默认的图片尺寸，或写入到生成img标签的行间样式
         defaultSize: {
             height: 'auto',

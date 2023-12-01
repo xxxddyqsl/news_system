@@ -31,7 +31,7 @@ class Media extends Component<any> {
                         width: data.width || 'auto',
                         maxWidth:'100%',
                     }}
-                ></img>
+                ></img>{emptyHtml}
             </div>
         )
     }
