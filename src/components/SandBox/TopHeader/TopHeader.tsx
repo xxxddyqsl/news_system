@@ -12,12 +12,13 @@ import { Layout, Button, theme, Avatar, Dropdown, Space } from 'antd';
 //状态管理
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
+import { BASE_URL } from '../../../util/request_http';
 
 
 const { Header } = Layout;
 
 export default function TopHeader(props:any) {
-  // console.log(props)
+//   console.log(props)
   const dispatch=useDispatch();
 
   const items: MenuProps['items'] = [
@@ -69,14 +70,11 @@ export default function TopHeader(props:any) {
           height: 64,
         }}
       />
-
-
-
       <div style={{ float: 'right', marginRight: '20px' }}>
         <Dropdown menu={{ items }}>
           <Space>
             <span style={{ marginRight: '8px' }}>欢迎<span style={{color:'#1890ff'}}>{props.userInfo?.username}</span>回来</span>
-            <Avatar size="large" icon={<UserOutlined />} />
+            {props.userInfo.avatar?<Avatar size="large" src={BASE_URL+props.userInfo.avatar} />:<Avatar size="large" icon={<UserOutlined />} />}
           </Space>
         </Dropdown>
       </div>

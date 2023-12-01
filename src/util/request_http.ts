@@ -11,7 +11,7 @@ import type { AppDispatch } from "../redux/store";
 import { message } from "antd";
 // axios的配置文件, 可以在这里去区分开发环境和生产环境等全局一些配置
 const devBaseUrl:string = '/api' //本地环境 配置每一个请求的url 前缀 setupProxy.js 中配置了 /api 转发代理
-const proBaseUrl:string = 'http://xxxxx.com/'// 正式环境
+const proBaseUrl:string = ''// 正式环境
 
 // process.env返回的是一个包含用户的环境信息,它可以去区分是开发环境还是生产环境
 console.log(process.env)

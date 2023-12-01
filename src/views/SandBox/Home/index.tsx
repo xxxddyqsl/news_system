@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
     BarChartOutlined,
     EditOutlined,
@@ -6,25 +6,56 @@ import {
     SettingOutlined,
     HeartTwoTone,
     StarTwoTone,
+    UserOutlined,
+    FundViewOutlined,
     PieChartOutlined,
 } from '@ant-design/icons'
-import { Row, Col, Card, List, Avatar,Drawer } from 'antd'
+import { Row, Col, Card, List, Avatar, Drawer, Form, Tooltip } from 'antd'
 import { useHome } from '../../../components/SandBox/Home/useHome'
 import { NavLink } from 'react-router-dom'
-import {HomeEChartsBar,HomeEChartsPie} from '../../../components/SandBox/Home/homeECharts'
+import {
+    BarECharts,
+    PieECharts,
+} from '../../../components/SandBox/Home/homeECharts'
+import MyModal from '../../../components/modal'
+import MyForm from '../../../components/form'
+import { SetUserInfo } from '../../../components/users-manage/userForm'
+import { BASE_URL } from '../../../util/request_http'
 const { Meta } = Card
 
 export default function Home() {
-    const { viewList, starList, userInfo,newsCount,open, showDrawer,  onClose } = useHome()
+    // antd 内部封装的 获取form 表单函数 ， form 返回一个对象 内包含了 submit 提交 ，获取value 等等函数
+    const [updateForm] = Form.useForm()
+
+    const {
+        viewList,
+        starList,
+        allList,
+        userInfo,
+        newsCount,
+        open,
+        showDrawer,
+        onClose,
+        useOpen,
+        showUpUser,
+        handleUpdateOk,
+        fileList,
+        setFileList,
+    } = useHome()
     return (
         <>
             {/* 栅格 */}
-            <Row gutter={16}>
+            <Row gutter={[16, 16]}>
                 <Col span={8}>
                     <Card
-                        title={`用户最常浏览 ${(
-                            <BarChartOutlined></BarChartOutlined>
-                        )}`}
+                        title={
+                            <>
+                                用户最常浏览
+                                <BarChartOutlined
+                                    style={{ marginLeft: '16px' }}
+                                ></BarChartOutlined>
+                            </>
+                        }
                         bordered={true}
                     >
                         <List
@@ -42,13 +73,38 @@ export default function Home() {
                                     >
                                         {item.title}
                                     </NavLink>
+
+                                    <span style={{ marginLeft: 'auto' }}>
+                                        <Tooltip //文字提示气泡框
+                                            title={'浏览量 ' + item.view}
+                                            color={'blue'}
+                                        >
+                                            <FundViewOutlined
+                                                style={{
+                                                    marginRight: '8px',
+                                                    color: '#1677ff',
+                                                }}
+                                            />
+                                            {item.view}
+                                        </Tooltip>
+                                    </span>
                                 </List.Item>
                             )}
                         />
                     </Card>
                 </Col>
                 <Col span={8}>
-                    <Card title="用户点赞最多" bordered={true}>
+                    <Card
+                        title={
+                            <>
+                                用户点赞最多
+                                <BarChartOutlined
+                                    style={{ marginLeft: '16px' }}
+                                ></BarChartOutlined>
+                            </>
+                        }
+                        bordered={true}
+                    >
                         <List
                             size="small"
                             // header={<div>Header</div>} // 头部
@@ -63,11 +119,19 @@ export default function Home() {
                                         state={{ id: item.id }}
                                     >
                                         {item.title}
-                                        <span style={{ marginLeft: '20px' }}>
-                                            <HeartTwoTone twoToneColor="#eb2f96" />
-                                            {item.star}
-                                        </span>
                                     </NavLink>
+                                    <span style={{ marginLeft: 'auto' }}>
+                                        <Tooltip //文字提示气泡框
+                                            title={'点赞量 ' + item.star}
+                                            color={'pink'}
+                                        >
+                                            <HeartTwoTone
+                                                twoToneColor="#eb2f96"
+                                                style={{ marginRight: '8px' }}
+                                            />
+                                            {item.star}
+                                        </Tooltip>
+                                    </span>
                                 </List.Item>
                             )}
                         />
@@ -83,15 +147,28 @@ export default function Home() {
                             />
                         }
                         actions={[
-                            <PieChartOutlined   key="setting" onClick={showDrawer}/>,
+                            <PieChartOutlined
+                                key="setting"
+                                onClick={showDrawer}
+                            />,
                             // <SettingOutlined key="setting" />,
-                            <EditOutlined key="edit" />,
+                            <EditOutlined
+                                key="edit"
+                                onClick={() => showUpUser(true, updateForm)}
+                            />,
                             <EllipsisOutlined key="ellipsis" />,
                         ]}
                     >
                         <Meta
                             avatar={
-                                <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
+                                userInfo.avatar ? (
+                                    <Avatar src={BASE_URL + userInfo.avatar} />
+                                ) : (
+                                    <Avatar
+                                        size="large"
+                                        icon={<UserOutlined />}
+                                    />
+                                )
                             }
                             title={userInfo.username}
                             description={
@@ -110,12 +187,48 @@ export default function Home() {
                     </Card>
                 </Col>
             </Row>
-            <Drawer width={500} title="Basic Drawer" placement="right" onClose={onClose} open={open}>
-                 {/* ECharts 图表部分  饼状图*/}
-                <HomeEChartsPie newsCount={newsCount}></HomeEChartsPie>
+            <Drawer
+                width={500}
+                title="个人新闻分类"
+                placement="right"
+                onClose={onClose}
+                open={open}
+            >
+                {/* ECharts 图表部分  饼状图 - 优化 open 状态异步 在 open 为true时 在渲染 饼状图组件*/}
+                <PieECharts newsCount={allList} open={open}></PieECharts>
             </Drawer>
             {/* ECharts 图表部分  柱状图*/}
-            <HomeEChartsBar newsCount={newsCount}></HomeEChartsBar>
+            <BarECharts newsCount={newsCount}></BarECharts>
+
+            <MyModal
+                open={useOpen}
+                title={'修改个人信息'}
+                okText={'提交'}
+                cancelText={'取消'}
+                onCreate={(values: any) => {
+                    showUpUser(false)
+                    //  model  关闭 清空 文件上传input fileList 状态
+                    setFileList([])
+                }}
+                onOk={() => handleUpdateOk(updateForm)}
+                onCancel={() => {
+                    // 取消
+                    showUpUser(false)
+                    //  model  关闭 清空 文件上传input fileList 状态
+                    setFileList([])
+                    // 清空 表单 数据
+                    updateForm.resetFields()
+                }}
+                childrenArr={[
+                    <MyForm layout={'vertical'} form={updateForm}>
+                        <SetUserInfo
+                            userInfo={userInfo}
+                            fileList={fileList}
+                            setFileList={setFileList}
+                        ></SetUserInfo>
+                    </MyForm>,
+                ]}
+            ></MyModal>
         </>
     )
 }

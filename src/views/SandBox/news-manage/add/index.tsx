@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate,useLocation } from 'react-router-dom'
 
 import { Button, Form, message, notification } from 'antd';
 
@@ -9,7 +9,61 @@ import { NewsBasicInfoEdit, NewsContent } from '../../../../components/SandBox/N
 import axios from 'axios'
 import MyEditor from '../../../../components/Editor';
 import { useSelector, shallowEqual } from 'react-redux';
+import util from '../../../../util/util';
+// 根据当前环境 返回 '/api' 或 ''
+import { BASE_URL } from '../../../../util/request_http';
 
+
+const  uploadEditorImage = async(formData:any)=>{
+    try {
+        // const  res = await axios.post('/api/uploadNewsImage', blobUrl, {
+        //     headers: {
+        //       'Content-Type': 'multipart/form-data'
+        //     }  
+        //   });
+        const  res = await axios({
+            url: `/api/uploadNewsImage`,
+            method: 'post',
+            // 声明 传入数据的 编码格式 当前提交内容包含了 文件 需要修改提交编码格式："multipart/form-data"
+            headers: { 'Content-Type': "multipart/form-data" },
+            data: formData
+        });
+        console.log(res);
+        return res.data.Data;
+      } catch (err) {
+        console.log(err);
+      }
+}
+const UploadEditorImg= (Content:string)=>{
+    return new Promise(async (resolve, rejects) => {
+    let par = new DOMParser();
+    let doc = par.parseFromString(Content,'text/html');
+    let imgurls= doc.body.querySelectorAll('img');
+    // 获取所有的image src  blob:http: 为图片文件临时路径 - 在保存草稿 或 提交审核时 上传图片 获取真实路径
+    for(let i=0; i< imgurls.length; i++){
+        // 获取 临时路径 blob:http:
+        let url = imgurls[i].getAttribute('src');
+        // 遍历 包含 blob:http: 为临时路径 -进行上传服务器
+        if(url?.includes('blob:http:')){
+            // imgurls[i].setAttribute('title',`测试-${i}`)
+            // （ base64 或  blob:http: ）临时路径 url 转 blob对象
+            let res = await util.createObjectBlob({url});
+            let formData = new FormData();
+            //  blob对象  转  file 文件
+            let file=  util.createObjectFile(res.blob,'用户上传的图片',res.blob.type)
+            formData.append('newsImages',file)
+            // 调用接口上传数据库
+           let src= await uploadEditorImage(formData);
+        //修改 html 替换为服务器返回真实路径
+           imgurls[i].setAttribute('src',BASE_URL+src)
+        }
+    }
+    let html = doc.body.innerHTML;
+    // console.log(srcArr,html)
+    // 返回 html
+    resolve(html)
+})
+}
 // ts 接口 约束 路由配置属性
 interface StepsDataType {
   title: string;
@@ -59,6 +113,7 @@ function format(format: string, fdate: any) {
 };
 // 新闻管理 -撰写新闻 组件
 export default function NewsAdd(props: any) {
+    const Location = useLocation();
   //根据store.js中设置的reducer名字，从 userSlice 空间获取state
   const { userInfo } = useSelector((state: any) => state.userSlice, shallowEqual);
   // current 撰写新闻的当前步骤  0 - 2
@@ -81,7 +136,8 @@ export default function NewsAdd(props: any) {
   const handleChangeCategory = (value: number, newForm: any) => {
     console.log(value, newForm)
   }
-  const handleNext = () => {
+  const handleNext = async () => {
+     
     if (current === 0) {
       // 点击确认 - 获取 form 表单 数据 -默认校验 必填项 是否有值，
       newsForm.validateFields().then((value: any) => {
@@ -97,7 +153,7 @@ export default function NewsAdd(props: any) {
       if (editorContent === '' || editorContent.trim() === '<p></p>') {
         message.error(`Please input your  editor Content !`)
       }
-      console.log(editorContent);
+      console.log(editorContent,Location)
       setCurrent(current + 1)
 
     }
@@ -116,10 +172,15 @@ export default function NewsAdd(props: any) {
     });
   }, [])
   // 保存草稿
-  const handleSave = (auditState: number) => {
+  const handleSave = async (auditState: number) => {
+      //   断言 为 string - 优先 上传 编辑器 中 img 图片 - 返回html字符串
+      const imgUploadHtml= await UploadEditorImg(editorContent) as string
+    //   更新状态
+      setEditorContent(imgUploadHtml);
+      console.log('imgUploadHtml===>', imgUploadHtml);
     let data = {
       ...formInfo,
-      content: editorContent.replace(/"/g, "'"),
+      content: imgUploadHtml.replace(/"/g, "'"),
       region: userInfo.region,// 发布人 区域
       author: userInfo.username, // 发布人name
       authorId: userInfo.id,// 发布人id
@@ -131,6 +192,7 @@ export default function NewsAdd(props: any) {
       view: 0,
       publishTime: null,
     }
+    console.log(data)
     // 提交数据库
     axios({
       url: `/api/newsSavedraft`,
@@ -152,7 +214,8 @@ export default function NewsAdd(props: any) {
       console.log(err)
     });
   }
-  console.log(props)
+//   console.log(props)
+// uploadCallback
   return (
     <div className={styles.wrapper + ' gg-flex-4 gg-flex-2'}>
       <NewsBasicInfoEdit
@@ -162,6 +225,7 @@ export default function NewsAdd(props: any) {
         CategoryList={CategoryList}
         styles={styles}
         layout={layout}
+        editorContent={editorContent}
         newsForm={newsForm}
         setEditorContent={(value: any) => { setEditorContent(value) }}
       >

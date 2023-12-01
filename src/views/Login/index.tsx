@@ -1,6 +1,6 @@
 import React ,{useCallback} from 'react'
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import { LockOutlined, UserOutlined ,ReadOutlined} from '@ant-design/icons';
+import { Button, Checkbox, Form, Input, message,FloatButton } from 'antd';
 // 粒子动画效果
 import MyParticles from '../../components/particles';
 import styles from '../../assets/css/login.module.scss'
@@ -48,7 +48,18 @@ export default function Login() {
 
   return (
     <div className={'gg-flex-1 gg-flex-2' + ' ' + styles.login_bg}>
+        {/* 粒子动画效果 */}
       <MyParticles></MyParticles>
+    {/* 悬浮按钮 */}
+      <FloatButton
+      shape="square"
+      type="primary"
+      tooltip={<>浏览新闻</>}
+      style={{ right: 24 }}
+      onClick={()=>{navigate('/tourist/news')}}
+      icon={<ReadOutlined />}
+    />
+      {/* <div className={ styles.login_header}> <ReadOutlined title='浏览新闻' onClick={()=>{navigate('/tourist/news')}}/> </div> */}
       <div className={styles.login_formContainer}>
         <div className={styles.login_title}>全球新闻发布管理系统</div>
         <Form
@@ -78,6 +89,7 @@ export default function Login() {
             <Button type="primary" htmlType="submit" className="login-form-button">
               登录
             </Button>
+           
           </Form.Item>
         </Form>
       </div>
