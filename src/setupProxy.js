@@ -52,5 +52,12 @@ module.exports = function (app) {
       changeOrigin: true,
       pathRewrite: { '^/api': '' }
     }),
+    // createProxyMiddleware('/uploads', {// 接口返回的 图片地址转发
+    //     target: 'http://172.18.70.26:4399/',
+    //     // target: 'http://192.168.10.5:4399/',//
+    //     changeOrigin: true,
+    //     pathRewrite: { '^/api': 'uploads' }
+    //   }),
+    
   )
 }

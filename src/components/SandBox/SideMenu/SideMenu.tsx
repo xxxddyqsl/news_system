@@ -67,7 +67,7 @@ export default function SideMenu(props: any) {
       <div style={{ display: 'flex', height: '100%', flexDirection: 'column', }}>
        
         <div className="demo-logo-vertical" >
-          {!props.collapsed?'DEMO':<AppstoreOutlined />}
+          {!props.collapsed?'全球新闻发布管理系统':<AppstoreOutlined />}
         </div>
         <div style={{ flex: '1', overflow: 'auto' }}>
           <Menu

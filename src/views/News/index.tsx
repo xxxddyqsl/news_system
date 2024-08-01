@@ -7,6 +7,7 @@ import { Row, Col, Card, List, Button, Drawer, Form, FloatButton } from 'antd'
 // lodash 处理js 数据的 第三方库  如 将 数据 按条件 进行分组 ： _.groupBy(data,item=>item.title) ,解释说明_.groupBy(数据,条件)
 import _ from 'lodash'
 import { NavLink } from 'react-router-dom'
+import Styles from '../../assets/css/tourist-manage/tourist.module.scss'
 interface descType {
     publishState: number
 }
@@ -41,7 +42,7 @@ export default function Tourist() {
         })
     }, [])
     return (
-        <div style={{ width: '96%', margin: '0 auto' }}>
+        <div className={Styles.touristWrapper} >
             <PageHeader
                 className="site-page-header"
                 //   onBack={() => null}
@@ -65,11 +66,12 @@ export default function Tourist() {
             <Row gutter={[16, 16]}>
                 {list.map((item: any) => (
                     <Col
+                    className={ 'touristCol gg-flex-3 gg-flex-2'}
                         span={8}
                         // 取 第0 项 按条件 进行分组 的 新闻大类 title
                         key={item[0]}
                     >
-                        <Card bordered={true} hoverable={true} title={item[0]}>
+                        <Card className={'touristCard gg-flex-3 gg-flex-2'} bordered={true} hoverable={true} title={item[0]}>
                             <List
                                 size="small"
                                 // header={<div>Header</div>} // 头部

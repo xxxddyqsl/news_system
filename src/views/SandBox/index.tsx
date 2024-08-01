@@ -86,6 +86,7 @@ export default function NewsSandBox() {
             padding: 24,
             minHeight: 280,
             overflow:'auto',
+            flex:1,
             background: colorBgContainer,
           }}
           className='SandBox-wrapper-Content'

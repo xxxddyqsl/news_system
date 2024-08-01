@@ -64,7 +64,8 @@ export default function App() {
       // Reset the state of your app so the error doesn't happen again
       console.error("details:", details);
     }}>
-      <BrowserRouter >
+      {/* <BrowserRouter basename='/build'> */}
+        <BrowserRouter>
         {/* 重定向 */}
         {<NavigateFunctionComponent></NavigateFunctionComponent>}
         <MRouters></MRouters>

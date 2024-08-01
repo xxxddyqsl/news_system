@@ -18,7 +18,7 @@ console.log(process.env)
 export const BASE_URL:string = process.env.NODE_ENV === 'development' ? devBaseUrl : proBaseUrl
 
 export const TIMEOUT:number = 10 * 1000;
-// 创建 案凶手 实例
+// 创建  实例
 // export const $axios=axios.create({
 //     baseURL: BASE_URL,
 //     timeout: TIMEOUT // 超时时间

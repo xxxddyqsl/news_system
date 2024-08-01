@@ -1,0 +1,37 @@
+.touristWrapper{
+    width: 96%;
+    margin: 0px auto;
+
+ // scss 中 修改 antd 样式 :global 声明  因 module 在编译后 类名后加 哈希字符串 ，使用global声明的class，不会在编译的时候被加上哈希字符串，
+    // 从而可以实现覆盖默认样式的效果， 但是用global最好在外面嵌套一层自己的div，不然会全局修改，也会修改掉其他同事的组件样式
+    // 如上 ： 是嵌套在 news-manage-preview-wrappe 类名中的 而 news-manage-preview-wrappe 类会被 加 哈希字符串
+    :global{
+        .touristCol{
+    
+        }
+        .touristCard{
+            flex: 1;
+            width: 100%;
+            .ant-card-head{
+                width: 100%;
+            }
+            .ant-card-body{
+                flex: 1;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                .ant-list{
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    .ant-spin-nested-loading{
+                        flex: 1;
+                    }
+                    .ant-list-pagination{
+                        margin-top: auto;
+                    }
+                }
+            }
+        }
+    }
+}

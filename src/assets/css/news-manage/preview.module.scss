@@ -17,15 +17,21 @@
     //     }
     // }
    
-    // #newsContent-wrapper {
-    //     flex: 1;
-    //     overflow: auto;
-    //     .newsContent{
-    //         flex: 1;
-           
-    //     }
-        img{
-            max-width: 100%;
+    #newsContent-wrapper {
+        flex: 1;
+        // overflow: auto;
+        .newsContent{
+            flex: 1;
+            text-align: center;
+            p{
+                text-align: none;
+            }
+            img{
+                max-width: 100%;
+                margin: 0 auto;
+            }
         }
-    // }
+  
+      
+    }
 }
