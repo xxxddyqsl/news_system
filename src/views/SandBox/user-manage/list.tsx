@@ -17,6 +17,19 @@ import { changeUserSlice } from '../../../redux/actionCreators/userSlice';
 import WinResize from '../../../components/winResize';
 import styles from '../../../assets/css/user-manage/list.module.scss'
 let { confirm } = Modal
+enum roleidType {// 角色等级
+    '超级管理员'=1,
+    '区域管理员'=2,
+    '区域编辑'=3
+}
+enum roleStateType {// 角色状态  1 为默认用户的状态 开关 1 (为真) 打开 0 (为假)关闭, default 1 为默认用户 禁止删除- 修改状态
+'false'=0,
+'true'=1
+}
+enum roleDefaultType{// 角色   {/* default, 表示 用户 默认 1表示 不可删除 0 可删除  */ }
+    '不可删除'=1,
+    '可删除'=0
+}
 export default function UserList() {
      //根据store.js中设置的reducer名字，从 userSlice 空间获取state
   const {userInfo}=useSelector((state:any)=> state.userSlice,shallowEqual);
@@ -55,7 +68,7 @@ const [warperRef,setWarperRef]= useState();
       }
     }).then(res => {
       console.log(res)
-      if (res.data.Code != 0) return error();
+      if (res.data.Code !== 0) return error();
 
       let data = res.data.Data;
       setdataSource(data);
@@ -74,7 +87,7 @@ const [warperRef,setWarperRef]= useState();
       method: 'get',
     }).then(res => {
       // console.log(res)
-      if (res.data.Code != 0) return error();
+      if (res.data.Code !== 0) return error();
 
       let data = res.data.Data;
       setRolesList(data);
@@ -93,7 +106,7 @@ const [warperRef,setWarperRef]= useState();
       method: 'get',
     }).then(res => {
       console.log(res)
-      if (res.data.Code != 0) return error();
+      if (res.data.Code !== 0) return error();
 
       let data = res.data.Data;
       setRegionsList(data);
@@ -131,11 +144,11 @@ const [warperRef,setWarperRef]= useState();
         )),
       ],
       onFilter:(value:any,item:any)=>{ // onFilter 用于筛选当前数据 当前数据区域 字段 为region (region为空说明是 全球)
-        return (item.region==''?'全球':item.region) === value;
+        return (item.region===''?'全球':item.region) === value;
       },
       render: (val: any, record: any, index: any) => { // 自定义渲染函数 表格内容 参数的形式传入, 必须return 返回 否则ts报错
         // console.log(text,record)
-        return <div style={{ fontWeight: 'bold' }}>{val && val != '' ? val : '全球'}</div>
+        return <div style={{ fontWeight: 'bold' }}>{val && val !== '' ? val : '全球'}</div>
       },
     },
     {
@@ -147,9 +160,9 @@ const [warperRef,setWarperRef]= useState();
         // console.log(roles)
         let styleobj ={
           // css 自定义删除线颜色、样式和粗细
-          textDecoration: roles.disable!=1?'line-through red 2px':'',
+          textDecoration: roles.disable!==1?'line-through red 2px':'',
         }
-        let title =roles.disable!=1?'角色已被删除':''
+        let title =roles.disable!==1?'角色已被删除':''
         return <div style={styleobj} title={`${title}`}>{roles.roleName}</div>
       }
     },
@@ -157,6 +170,10 @@ const [warperRef,setWarperRef]= useState();
       title: '用户名称', // 显示在页面上的内容
       dataIndex: 'username',// 想要 显示对应数据的 字段 名
       key: 'id',// key 可写可不写
+      render:(roles: any, record: any, index: any)=>{
+        let context = userInfo.id === record.id ? <div style={{color:'#1677ff'}} title='自己' >{record.username}</div> : record.username;
+        return  context
+      }
     },
     {
       title: '用户状态', // 显示在页面上的内容
@@ -169,24 +186,25 @@ const [warperRef,setWarperRef]= useState();
           // setLoading(true)
           //  深度拷贝状态 - 修改 状态
           let newlist = JSON.parse(JSON.stringify(dataSource))
-          newlist.map((data: any) => {
-            data.id == record.id && (data.rolestate = (data.rolestate == 1 ? 0 : 1))
+          newlist.map((data: any)=> {
+            data.id === record.id && (data.rolestate = (data.rolestate === roleStateType['true'] ? 0 : 1))
           });
           // 要修改的内容
           let data = {
             id: record.id,
-            set: { rolestate: record.rolestate == 1 ? 0 : 1 }
+            set: { rolestate: record.rolestate === roleStateType['true'] ? 0 : 1 }
           }
           handleRoleState(newlist, data)
-        }} checked={roleState == 1 ? true : false} disabled={record.default == 1 ? true : false}></Switch>
+        }} checked={roleState === roleStateType['true'] ? true : false} disabled={record.default === roleStateType['true'] ? true : false}></Switch>
       }
     },
     {
       title: '操作',
       render: (item: any,) => { // 此处 dataIndex 未和数据字段的 属性绑定 因此只有一个返回值 返回当前行的数据
+        console.log(item)
         return <div>
           {/* default, 表示 用户 默认 1表示 不可删除 0 可删除  */}
-          <Button danger shape="circle" disabled={item.default == 1 ? true : false} icon={<DeleteOutlined />} onClick={() => {
+          <Button danger shape="circle" disabled={item.default === roleDefaultType['不可删除']|| item.id ===  userInfo.id ? true : false} icon={<DeleteOutlined />} onClick={() => {
             ConfirmMethod(item)
           }} style={{ marginRight: '16px' }} />
 
@@ -196,7 +214,7 @@ const [warperRef,setWarperRef]= useState();
             // 更新用户
             handleEditUserInfo(item)
             {/* default, 表示 用户 默认 1表示 不可删除 0 可删除  */ }
-          }} icon={<EditOutlined />} disabled={item.default == 1 ? true : false} ></Button>
+          }} icon={<EditOutlined />} disabled={item.default === roleDefaultType['不可删除'] ? true : false} ></Button>
         </div>
       }
     },
@@ -220,7 +238,7 @@ const [warperRef,setWarperRef]= useState();
   // 操作 - 点击 编辑用户
   const handleEditUserInfo = (item: any) => {
   // 不是超级管理员
-  if(userInfo.roleid!=1){
+  if(userInfo.roleid !== roleidType['超级管理员'] ){
     //  只能添加 选择当前自己的区域
     setRegionsList(regionsList.map((item:any)=> item=(!item.value.includes(userInfo.region)?{...item,disabled:true}:item)))
     //  只能添加  自己下一级角色的权限
@@ -231,7 +249,7 @@ const [warperRef,setWarperRef]= useState();
     setUpdateOpen(true)
     console.log(item)
     // 设置 区域是否为必填项
-    setIsDisabledRegions(item.roleid == 1 ? true : false)
+    setIsDisabledRegions(item.roleid === roleidType['超级管理员'] ? true : false)
     // 当前用户信息 传入 updateForm input值
     updateForm.setFieldsValue(item);
     // 保存当前用户信息 - 在更新时 提取id 传入后端
@@ -269,11 +287,11 @@ const [warperRef,setWarperRef]= useState();
     // 显示 modal 组件
     setOpen(true);
     // 不是超级管理员
-    if(userInfo.roleid!=1){
+    if(userInfo.roleid!==roleidType['超级管理员']){
       // select 输入框默认值
-      // form.setFieldValue('region',userInfo.region)
+      form.setFieldValue('region',userInfo.region)
       //  只能添加 是自己下一级的权限
-      // form.setFieldValue('roleid',userInfo.roleid+1)
+      form.setFieldValue('roleid',userInfo.roleid+1)
       //  只能添加 选择当前自己的区域
       setRegionsList(regionsList.map((item:any)=> item=(!item.value.includes(userInfo.region)?{...item,disabled:true}:item)))
       //  只能添加 是自己下一级的权限
@@ -285,7 +303,7 @@ const [warperRef,setWarperRef]= useState();
     console.log(value)
     // 获取 form 表单内的 角色id 是否为 超级管理员 1，为 超级管理员时 select区域region 下拉框 为空
     let roleId = newForm.getFieldValue('roleid');
-    if (roleId === 1) {
+    if (roleId === roleidType['超级管理员']) {
       newForm.setFieldValue('region', '');
     }
   }
@@ -379,7 +397,7 @@ const [warperRef,setWarperRef]= useState();
         return item =(item.id === data.id ? { ...res.data.Data } : item);
       });
       // 修改的为自己的信息时 更新本地的userinfo 状态
-      userInfo.id ==  data.id &&   dispatch(changeUserSlice({value:{...res.data.Data},type:'userInfo'}))
+      userInfo.id ===  data.id &&   dispatch(changeUserSlice({value:{...res.data.Data},type:'userInfo'}))
       // console.log(res,updateList)
       setdataSource(updateList)
       // 关闭 modal
